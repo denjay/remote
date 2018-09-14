@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+
+<body>
+  <span>主机名</span>
+  <input type="text">
+  <button onclick="send_order('poweroff')">关机</button>
+  <ul></ul>
+
+  <script>
+    //get the IP addresses associated with an account
+    function getIPs(callback) {
+      var ip_dups = {};
+      var useWebKit = !!window.webkitRTCPeerConnection;
+      //minimal requirements for data connection
+      var mediaConstraints = {
+        optional: [{
+          RtpDataChannels: true
+        }]
+      };
+      var servers = {
+        iceServers: [{
+          urls: "stun:stun.services.mozilla.com"
+        }]
+      };
+      //construct a new RTCPeerConnection
+      var pc = new RTCPeerConnection(servers, mediaConstraints);
+
+      function handleCandidate(candidate) {
+        //match just the IP address
+        var ip_regex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/
+        var ip_addr = ip_regex.exec(candidate)[1];
+        //remove duplicates
+        if (ip_dups[ip_addr] === undefined)
+          callback(ip_addr);
+        ip_dups[ip_addr] = true;
+      }
+      //listen for candidate events
+      pc.onicecandidate = function (ice) {
+        //skip non-candidate events
+        if (ice.candidate)
+          handleCandidate(ice.candidate.candidate);
+      };
+      //create a bogus data channel
+      pc.createDataChannel("");
+      //create an offer sdp
+      pc.createOffer(function (result) {
+        //trigger the stun server request
+        pc.setLocalDescription(result, function () {}, function () {});
+      }, function () {});
+      //wait for a while to let everything done
+      setTimeout(function () {
+        //read candidate info from local description
+        var lines = pc.localDescription.sdp.split('\n');
+        lines.forEach(function (line) {
+          if (line.indexOf('a=candidate:') === 0)
+            handleCandidate(line);
+        });
+      }, 1000);
+    }
+
+    function send_order(order) {
+      getIPs(function (local_ip) {
+        var ul_el = document.getElementsByTagName("ul")[0]
+        var host_name = document.getElementsByTagName("input")[0].value
+        var nsid = local_ip.split(".").slice(0, 3).join(".") + ".";
+        var pormises = [];
+        for (var i = 1; i < 255; i++) {
+          let p = new Promise((resolve, reject) => {
+            let ip = nsid + i;
+            let ajax = new XMLHttpRequest();
+            ajax.open('get', `http://${ip}:8765?host_name=${host_name}&order=${order}`);
+            ajax.send();
+            ajax.onreadystatechange = function () {
+              console.log(ajax.readyState, ajax.status)
+              if (ajax.readyState == 4 && ajax.status == 200) {  // 请求成功
+                var li_el = document.createElement("li")
+                li_el.innerHTML = ajax.responseText;
+                ul_el.appendChild(li_el);
+                // resolve(ajax.responseText)
+                resolve("成功")
+              } else if (ajax.readyState == 4 && ajax.status == 0) {
+                resolve('失败')
+              }
+            }
+          });
+        pormises.push(p)
+        };
+        Promise.all(pormises).then((result) => {
+          console.log(result)
+        }).catch((error) => {
+          console.log(error)
+        })
+        
+      });
+    }
+  </script>
+</body>
+
+</html>
