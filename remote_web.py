@@ -11,40 +11,45 @@
 4、成功，以后可以从启动器打开
 """
 
-import threading
-from flask_cors import CORS
-from flask import Flask
-import setproctitle
-import tkinter as tk
-import pickle
-import qrcode
-import socket
-import time
-import sys
-import re
 import os
+import pickle
+import socket
+import sys
+import threading
+import time
+import tkinter as tk
+from flask import Flask
+from flask_cors import CORS
+import qrcode
+import setproctitle
 
 
 class Remote(object):
     def __init__(self):
         """给软件设置初始参数"""
         self.version = 1.0
-        self.x = 0
-        self.y = 0
+        self.x = 0  # 窗口x坐标
+        self.y = 0  # 窗口y坐标
+        self.x_relative = 0  # 相对坐标x
+        self.y_relative = 0  # 相对坐标y
         self.auto = 0  # 0表示不自启
         self.service_status = 0  # 0表示没有运行服务器
         self.skins = [('#1F2326', 'black', '#1F2336', '#00ffff', '#1F2326',  '#00ffff'),
                       ('#FFFFFF', '#90ee90', '#D0D0D0', '#00ced1', '#00ced1', '#FFFFFF')
                       ]
         self.skin = 0
-        self.qrcode_visibility = 1
+        self.mode = 1  # 0表示mini mode,1表示normal mode
         self.hostname = socket.gethostname()
         self.button_list = []  # 按钮列表
         self.entry = None  # 文本框对象
         self.entry_content = ""
         self.root = None
+        self.frame = None
         self.label = None
         self.img_label = None
+        self.close_button_label = None
+        self.img_close = None
+        self.img_close_hover = None
 
     def run_flask(self, hostname):
         app = Flask(__name__)
@@ -65,7 +70,6 @@ class Remote(object):
             hostname = self.entry_content.get()
         else:
             hostname = self.hostname
-        # self.ps = Process(target=self.run_flask, args=(hostname,))
         thr = threading.Thread(target=self.run_flask, args=(hostname,))
         thr.start()
         self.label.config(text='成功启动服务')
@@ -78,7 +82,7 @@ class Remote(object):
             self.auto = dic.get('auto')
             self.hostname = dic.get('hostname')
             self.skin = dic.get('skin')
-            self.qrcode_visibility = dic.get('qrcode_visibility')
+            self.mode = dic.get('qrcode_visibility')
             self.x = dic.get('x')
             self.y = dic.get('y')
         else:
@@ -94,7 +98,7 @@ Categories=Application;
 Version={}
 Type=Application
 Terminal=false
-""".format(os.path.realpath(__file__), sys.path[0] + '/ICON.png', self.version)
+""".format(os.path.realpath(__file__), sys.path[0] + '/assets/ICON.png', self.version)
             path = os.environ['HOME'] + \
                 '/.local/share/applications/Remote.desktop'
             with open(path, 'w+') as f:
@@ -110,20 +114,17 @@ fi
             with open(sys.path[0] + '/run.sh', 'w+') as f:
                 f.write(command)
 
-    def save_config(self, e):
+    def save_config(self):
         """保存配置到配置文件"""
         self.x = self.root.winfo_x()
-        self.y = self.root.winfo_y() - 28
+        self.y = self.root.winfo_y()
         self.hostname = self.entry_content.get()
-        dic = {'auto': self.auto, 'hostname': self.hostname, 'skin': self.skin, 'qrcode_visibility': self.qrcode_visibility, 'x': self.x, 'y': self.y}
+        dic = {'auto': self.auto, 'hostname': self.hostname, 'skin': self.skin, 'qrcode_visibility': self.mode, 'x': self.x, 'y': self.y}
         with open(sys.path[0] + '/config.pkl', 'wb') as config:
             pickle.dump(dic, config)
-    
+
     def generate_qrcode(self):
-        qr = qrcode.QRCode(
-            box_size = 5,
-            border = 0,
-        )
+        qr = qrcode.QRCode(box_size=5, border=0)
         qr.add_data(self.entry_content.get())
         img = qr.make_image(fill_color=self.skins[self.skin][4], back_color=self.skins[self.skin][5])
         img.save('qrcode.png')
@@ -131,15 +132,21 @@ fi
     def refresh_qrcode(self, e=None):
         self.generate_qrcode()
         self.qrcode = tk.PhotoImage(file="qrcode.png")
-        self.img_label["image"]=self.qrcode
+        self.img_label["image"] = self.qrcode
 
-    def show_qrcode(self, e):
-        """将hosts文件重置到原始"""
-        self.qrcode_visibility = 0 if self.img_label.winfo_ismapped() else 1
-        if self.qrcode_visibility:
-            self.img_label.grid()
+    def mini_mode(self, e):
+        """切换界面显示模式"""
+        self.mode = 0 if self.img_label.winfo_ismapped() else 1
+        if self.mode:
+            for child in self.root.children.values():
+                if child != self.label:
+                    child.grid()
+            self.root.geometry('+{}+{}'.format(self.x, self.y))
         else:
-            self.img_label.grid_remove()
+            for child in self.root.children.values():
+                if child != self.label:
+                    child.grid_remove()
+            self.root.geometry('+{}+{}'.format(self.x, self.y + 20))
 
     def dialog(self):
         """显示软件说明"""
@@ -202,6 +209,8 @@ fi"""
         self.entry["bg"] = self.skins[self.skin][0]
         self.img_label["fg"] = self.skins[self.skin][3]
         self.img_label["bg"] = self.skins[self.skin][0]
+        self.close_button_label["fg"] = self.skins[self.skin][3]
+        self.close_button_label["bg"] = self.skins[self.skin][0]
         for bt in self.button_list:
             bt["fg"] = self.skins[self.skin][3]
             bt["bg"] = self.skins[self.skin][0]
@@ -209,11 +218,45 @@ fi"""
             bt["activeforeground"] = self.skins[self.skin][3]
             bt["highlightbackground"] = self.skins[self.skin][1]
 
+    def quit(self, e):
+        self.save_config()
+        sys.exit()
+
+    def change_close_button_img(self, e):
+        if e.type._name_ == "Enter":
+            self.close_button_label["image"] = self.img_close_hover
+        elif e.type._name_ == "Leave":
+            self.close_button_label["image"] = self.img_close
+
+    def move(self, e):
+        '''移动窗口'''
+        if e.x_root < self.root.winfo_screenwidth() - 10:
+            new_x = e.x - self.x_relative + self.root.winfo_x()
+            new_y = e.y - self.y_relative + self.root.winfo_y()
+            if new_x < 10:
+                new_x = 0
+            if new_x > self.root.winfo_screenwidth() - self.root.winfo_width() - 10:
+                new_x = self.root.winfo_screenwidth() - self.root.winfo_width()
+            # if new_x > self.root.winfo_screenwidth() - self.root.winfo_width() - 10:
+            #     new_x = self.root.winfo_screenwidth() - 4
+            if new_y < 10:
+                new_y = 0
+            if new_y > self.root.winfo_screenheight() - self.root.winfo_height() - 10:
+                new_y = self.root.winfo_screenheight() - self.root.winfo_height()
+            self.x = new_x
+            self.y = new_y
+            self.root.geometry('+{}+{}'.format(self.x, self.y))
+
+    def click(self, e):
+        '''左键单击窗口时获得鼠标位置，辅助移动窗口'''
+        self.x_relative = e.x
+        self.y_relative = e.y
+
     def run_gui(self):
         """启动软件主界面"""
         self.root = tk.Tk()
         self.root.title('')
-        img = tk.PhotoImage(file=sys.path[0] + '/ICON.png')
+        img = tk.PhotoImage(file=sys.path[0] + '/assets/ICON.png')
         self.root.tk.call('wm', 'iconphoto', self.root._w, img)
 
         if self.x == self.y == 0:
@@ -223,16 +266,27 @@ fi"""
         self.root["background"] = self.skins[self.skin][0]
         self.root.resizable(False, False)  # 固定窗口大小
         self.root.wm_attributes('-topmost', 1)  # 置顶窗口
+        self.root.overrideredirect(True)
+        self.root.bind('<Button-1>', self.click)
+        self.root.bind('<B1-Motion>', self.move)
+
+        self.img_close = tk.PhotoImage(file="./assets/titlebutton-close.png")
+        self.img_close_hover = tk.PhotoImage(file="./assets/titlebutton-close-hover.png")
+        self.close_button_label = tk.Label(self.root, image=self.img_close, width=20, height=20, fg=self.skins[self.skin][3], bg=self.skins[self.skin][0])
+        self.close_button_label.grid(column=1, ipadx=2, sticky=tk.E)
+        self.close_button_label.bind('<ButtonPress-1>', self.quit)  # 添加单击事件
+        self.close_button_label.bind('<Enter>', self.change_close_button_img)
+        self.close_button_label.bind('<Leave>', self.change_close_button_img)
 
         self.label = tk.Label(self.root, text='消息框', bg=self.skins[self.skin][2], fg=self.skins[self.skin][3], font=("Arial, 12"), relief=tk.FLAT, width=19)
-        self.label.grid(ipady=2, column=1, columnspan=2, row=1)
-        self.label.bind('<Destroy>', self.save_config)  # 添加退出事件
-        self.label.bind('<ButtonPress-1>', self.show_qrcode)  # 添加单击事件
+        self.label.grid(ipady=2, column=0, columnspan=2, row=1)
+        self.label.bind('<Double-Button-1>', self.mini_mode)  # 添加双击事件
+        self.label.bind('<Button-3>', self.quit)
 
         button_configs = [
-            (('开机自启', '取消自启')[self.auto], self.auto_starts, 2, 2),
-            ('切换主题', self.change_skin, 1, 3),
-            ('软件说明', self.dialog, 2, 3),
+            (('开机自启', '取消自启')[self.auto], self.auto_starts, 1, 2),
+            ('切换主题', self.change_skin, 0, 3),
+            ('软件说明', self.dialog, 1, 3),
             ]
         for bc in button_configs:
             button = tk.Button(self.root, text=bc[0], relief=tk.FLAT, command=bc[1], highlightthickness=0.5, fg=self.skins[self.skin][3], bg=self.skins[self.skin][0], activebackground=self.skins[self.skin][2], activeforeground=self.skins[self.skin][3], highlightbackground=self.skins[self.skin][1])
@@ -241,17 +295,17 @@ fi"""
             self.button_list.append(button)
 
         self.entry_content = tk.StringVar()
-        self.entry = tk.Entry(self.root, fg=self.skins[self.skin][3], bg=self.skins[self.skin][0], width=10 , textvariable=self.entry_content, justify=tk.CENTER, highlightthickness=0.5, highlightbackground='#4F4F4F', highlightcolor='#4F4F4F', relief=tk.FLAT)
+        self.entry = tk.Entry(self.root, fg=self.skins[self.skin][3], bg=self.skins[self.skin][0], width=10, textvariable=self.entry_content, justify=tk.CENTER, highlightthickness=0.5, highlightbackground='#4F4F4F', highlightcolor='#4F4F4F', relief=tk.FLAT)
         self.entry_content.set(self.hostname)
-        self.entry.grid(column=1, row=2, padx=3, pady=3, sticky=tk.N + tk.E + tk.S + tk.W)
+        self.entry.grid(column=0, row=2, padx=3, pady=3, sticky=tk.N + tk.E + tk.S + tk.W)
 
         self.img_label = tk.Label(self.root, width=150, height=150, fg=self.skins[self.skin][3], bg=self.skins[self.skin][0])
-        if self.qrcode_visibility:
+        if self.mode:
             self.generate_qrcode()
-            a = tk.PhotoImage(file="qrcode.png")
-            self.img_label["image"] = a
-            self.img_label.grid(column=1, columnspan=2, row=6)
-        
+            img = tk.PhotoImage(file="qrcode.png")
+            self.img_label["image"] = img
+            self.img_label.grid(column=0, columnspan=2, row=6)
+
         self.root.mainloop()
 
     def start(self):
