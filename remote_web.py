@@ -13,14 +13,17 @@
 
 import os
 import pickle
+import re
 import socket
 import sys
 import threading
 import time
 import tkinter as tk
+
+import qrcode
 from flask import Flask
 from flask_cors import CORS
-import qrcode
+
 import setproctitle
 
 
@@ -51,28 +54,25 @@ class Remote(object):
         self.img_close = None
         self.img_close_hover = None
 
-    def run_flask(self, hostname):
+    def run_flask(self, label):
         app = Flask(__name__)
         CORS(app)
 
         @app.route("/")
         def index():
             return "成功"
-
-        app.run(port=8765, host="0.0.0.0")
-        print("子进程结束")
-        # self.ps = None
-        # self.label.config(text='服务启动失败')
+            
+        label.config(text='成功启动服务')
+        try:
+            app.run(port=8765, host="0.0.0.0")
+        except:
+            label.config(text='服务启动失败')
 
     def run_service(self):
         """更新hosts操作的主进程"""
-        if len(sys.argv) == 1:  # 判断是以后台运行还是带界面
-            hostname = self.entry_content.get()
-        else:
-            hostname = self.hostname
-        thr = threading.Thread(target=self.run_flask, args=(hostname,))
+        thr = threading.Thread(target=self.run_flask, args=(self.label,))
+        thr.daemon = True
         thr.start()
-        self.label.config(text='成功启动服务')
 
     def get_config(self):
         """如果有配置文件，就从配置文件获取配置，否则创建配置文件"""
@@ -82,7 +82,7 @@ class Remote(object):
             self.auto = dic.get('auto')
             self.hostname = dic.get('hostname')
             self.skin = dic.get('skin')
-            self.mode = dic.get('qrcode_visibility')
+            self.mode = dic.get('mode')
             self.x = dic.get('x')
             self.y = dic.get('y')
         else:
@@ -119,18 +119,26 @@ fi
         self.x = self.root.winfo_x()
         self.y = self.root.winfo_y()
         self.hostname = self.entry_content.get()
-        dic = {'auto': self.auto, 'hostname': self.hostname, 'skin': self.skin, 'qrcode_visibility': self.mode, 'x': self.x, 'y': self.y}
+        dic = {'auto': self.auto, 'hostname': self.hostname, 'skin': self.skin, 'mode': self.mode, 'x': self.x, 'y': self.y}
         with open(sys.path[0] + '/config.pkl', 'wb') as config:
             pickle.dump(dic, config)
 
-    def generate_qrcode(self):
+    def refresh_qrcode(self, *args):
+        '''动态生成二维码'''
+        # 验证输入框数据
+        data = self.entry_content.get()
+        if self.entry_content.get() != self.hostname:
+            if not re.match(r"^[0-9a-zA-Z\_\-]{0,10}$", data):
+                self.label.config(text='输入不合法')
+                self.entry_content.set(self.hostname)
+            else:
+                self.hostname = data
+                self.label.config(text='已重新生成二维码')
+
         qr = qrcode.QRCode(box_size=5, border=0)
         qr.add_data(self.entry_content.get())
         img = qr.make_image(fill_color=self.skins[self.skin][4], back_color=self.skins[self.skin][5])
         img.save('qrcode.png')
-
-    def refresh_qrcode(self, e=None):
-        self.generate_qrcode()
         self.qrcode = tk.PhotoImage(file="qrcode.png")
         self.img_label["image"] = self.qrcode
 
@@ -177,7 +185,7 @@ fi
         sub_label.pack()
 
     def auto_starts(self):
-        """设置是否开机启动，自动更新"""
+        """设置是否开机后台启动"""
         PATH = os.environ['HOME'] + '/.profile'
         content = """
 # For Hosts assistant
@@ -223,6 +231,7 @@ fi"""
         sys.exit()
 
     def change_close_button_img(self, e):
+        '''标题栏关闭按钮变化'''
         if e.type._name_ == "Enter":
             self.close_button_label["image"] = self.img_close_hover
         elif e.type._name_ == "Leave":
@@ -237,6 +246,7 @@ fi"""
                 new_x = 0
             if new_x > self.root.winfo_screenwidth() - self.root.winfo_width() - 10:
                 new_x = self.root.winfo_screenwidth() - self.root.winfo_width()
+            # 自动隐藏
             # if new_x > self.root.winfo_screenwidth() - self.root.winfo_width() - 10:
             #     new_x = self.root.winfo_screenwidth() - 4
             if new_y < 10:
@@ -251,6 +261,9 @@ fi"""
         '''左键单击窗口时获得鼠标位置，辅助移动窗口'''
         self.x_relative = e.x
         self.y_relative = e.y
+    
+    def select_text(self, e):
+        self.entry.select_range(0, tk.END)
 
     def run_gui(self):
         """启动软件主界面"""
@@ -258,7 +271,7 @@ fi"""
         self.root.title('')
         img = tk.PhotoImage(file=sys.path[0] + '/assets/ICON.png')
         self.root.tk.call('wm', 'iconphoto', self.root._w, img)
-
+        # 主窗口
         if self.x == self.y == 0:
             self.x = self.root.winfo_screenwidth() // 2 - 100
             self.y = self.root.winfo_screenheight() // 2 - 200
@@ -266,10 +279,10 @@ fi"""
         self.root["background"] = self.skins[self.skin][0]
         self.root.resizable(False, False)  # 固定窗口大小
         self.root.wm_attributes('-topmost', 1)  # 置顶窗口
-        self.root.overrideredirect(True)
+        self.root.wm_attributes('-type', 'splash')
         self.root.bind('<Button-1>', self.click)
         self.root.bind('<B1-Motion>', self.move)
-
+        # 标题栏及关闭按钮
         self.img_close = tk.PhotoImage(file="./assets/titlebutton-close.png")
         self.img_close_hover = tk.PhotoImage(file="./assets/titlebutton-close-hover.png")
         self.close_button_label = tk.Label(self.root, image=self.img_close, width=20, height=20, fg=self.skins[self.skin][3], bg=self.skins[self.skin][0])
@@ -277,12 +290,12 @@ fi"""
         self.close_button_label.bind('<ButtonPress-1>', self.quit)  # 添加单击事件
         self.close_button_label.bind('<Enter>', self.change_close_button_img)
         self.close_button_label.bind('<Leave>', self.change_close_button_img)
-
+        # 消息框
         self.label = tk.Label(self.root, text='消息框', bg=self.skins[self.skin][2], fg=self.skins[self.skin][3], font=("Arial, 12"), relief=tk.FLAT, width=19)
         self.label.grid(ipady=2, column=0, columnspan=2, row=1)
         self.label.bind('<Double-Button-1>', self.mini_mode)  # 添加双击事件
         self.label.bind('<Button-3>', self.quit)
-
+        # 按钮组
         button_configs = [
             (('开机自启', '取消自启')[self.auto], self.auto_starts, 1, 2),
             ('切换主题', self.change_skin, 0, 3),
@@ -293,19 +306,26 @@ fi"""
             button.grid(column=bc[2], row=bc[3], padx=3,
                         pady=3, sticky=tk.N + tk.E + tk.S + tk.W)
             self.button_list.append(button)
-
+        # 输入框
         self.entry_content = tk.StringVar()
-        self.entry = tk.Entry(self.root, fg=self.skins[self.skin][3], bg=self.skins[self.skin][0], width=10, textvariable=self.entry_content, justify=tk.CENTER, highlightthickness=0.5, highlightbackground='#4F4F4F', highlightcolor='#4F4F4F', relief=tk.FLAT)
+        self.entry = tk.Entry(self.root, fg=self.skins[self.skin][3], bg=self.skins[self.skin][0], width=10, textvariable=self.entry_content, justify=tk.CENTER, highlightthickness=0.5, highlightbackground='#4F4F4F', highlightcolor='#4F4F4F', insertbackground=self.skins[self.skin][3], relief=tk.FLAT)
         self.entry_content.set(self.hostname)
+        self.entry_content.trace_add("write", self.refresh_qrcode)
         self.entry.grid(column=0, row=2, padx=3, pady=3, sticky=tk.N + tk.E + tk.S + tk.W)
+        self.entry.bind('<ButtonPress-1>', self.select_text)  # 添加单击事件
 
+        # 二维码界面
         self.img_label = tk.Label(self.root, width=150, height=150, fg=self.skins[self.skin][3], bg=self.skins[self.skin][0])
-        if self.mode:
-            self.generate_qrcode()
-            img = tk.PhotoImage(file="qrcode.png")
-            self.img_label["image"] = img
-            self.img_label.grid(column=0, columnspan=2, row=6)
+        self.refresh_qrcode()
+        self.img_label.grid(column=0, columnspan=2, row=6)
+        # 迷你模式时隐藏相关部件
+        if not self.mode:
+            for child in self.root.children.values():
+                if child != self.label:
+                    child.grid_remove()
+            self.root.geometry('+{}+{}'.format(self.x, self.y + 20))
 
+        self.run_service()
         self.root.mainloop()
 
     def start(self):
@@ -315,7 +335,6 @@ fi"""
             self.run_gui()
         else:
             self.run_service()
-
 
 if __name__ == "__main__":
     Remote().start()
