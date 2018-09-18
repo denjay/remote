@@ -68,6 +68,7 @@
         var ul_el = document.getElementsByTagName("ul")[0]
         var host_name = document.getElementsByTagName("input")[0].value
         var nsid = local_ip.split(".").slice(0, 3).join(".") + ".";
+        var resolved = false;
         var pormises = [];
         for (var i = 1; i < 255; i++) {
           let p = new Promise((resolve, reject) => {
@@ -77,25 +78,35 @@
             ajax.send();
             ajax.onreadystatechange = function () {
               console.log(ajax.readyState, ajax.status)
-              if (ajax.readyState == 4 && ajax.status == 200) {  // 请求成功
+              if (ajax.readyState == 4 && ajax.status == 200) { // 请求成功
                 var li_el = document.createElement("li")
                 li_el.innerHTML = ajax.responseText;
                 ul_el.appendChild(li_el);
                 // resolve(ajax.responseText)
-                resolve("成功")
+                resolved = true;
+                resolve("成功");
               } else if (ajax.readyState == 4 && ajax.status == 0) {
-                resolve('失败')
+                resolve('失败');
               }
             }
           });
-        pormises.push(p)
+          pormises.push(p)
         };
+        let p = new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject("超时，请重试！")
+          }, 8000)
+        });
+        pormises.push(p);
         Promise.all(pormises).then((result) => {
           console.log(result)
         }).catch((error) => {
-          console.log(error)
+          if (resolved === false){
+            var li_el = document.createElement("li")
+            li_el.innerHTML = error;
+            ul_el.appendChild(li_el);
+          }
         })
-        
       });
     }
   </script>

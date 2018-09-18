@@ -21,7 +21,7 @@ import time
 import tkinter as tk
 
 import qrcode
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 
 import setproctitle
@@ -60,13 +60,18 @@ class Remote(object):
 
         @app.route("/")
         def index():
-            return "成功"
-            
+            hostname = request.args["host_name"]
+            order = request.args["order"]
+            if hostname != self.hostname:
+                return "匹配不成功，请核对"
+            result = os.popen(order)
+            return result
+
         label.config(text='成功启动服务')
         try:
             app.run(port=8765, host="0.0.0.0")
-        except:
-            label.config(text='服务启动失败')
+        except OSError as e:
+            label.config(text='端口被占用')
 
     def run_service(self):
         """更新hosts操作的主进程"""
@@ -261,7 +266,7 @@ fi"""
         '''左键单击窗口时获得鼠标位置，辅助移动窗口'''
         self.x_relative = e.x
         self.y_relative = e.y
-    
+
     def select_text(self, e):
         self.entry.select_range(0, tk.END)
 
@@ -335,6 +340,7 @@ fi"""
             self.run_gui()
         else:
             self.run_service()
+
 
 if __name__ == "__main__":
     Remote().start()

@@ -1,0 +1,10 @@
+﻿# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Project file
+config.pkl
+
+# Editor config
+.vscode
