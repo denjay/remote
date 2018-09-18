@@ -1,0 +1,9 @@
+sudo apt-get install python3-pip
+sudo apt-get install python3-tk
+pip3 install flask
+pip3 install qrcode[pil]
+pip3 install -U flask-cors
+pip3 install PyUserInput
+
+pip3 install setproctitle
+setproctitle.setproctitle("要修改为的进程名")

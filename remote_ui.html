@@ -8,7 +8,8 @@
 <body>
   <span>主机名</span>
   <input type="text">
-  <button onclick="send_order('poweroff')">关机</button>
+  <button onclick="send_code('poweroff')">关机</button>
+  <button onclick="send_code('netease-cloud-music')">打开网易云音乐</button>
   <ul></ul>
 
   <script>
@@ -63,10 +64,10 @@
       }, 1000);
     }
 
-    function send_order(order) {
+    function send_code(code) {
       getIPs(function (local_ip) {
         var ul_el = document.getElementsByTagName("ul")[0]
-        var host_name = document.getElementsByTagName("input")[0].value
+        var hostname = document.getElementsByTagName("input")[0].value
         var nsid = local_ip.split(".").slice(0, 3).join(".") + ".";
         var resolved = false;
         var pormises = [];
@@ -74,7 +75,7 @@
           let p = new Promise((resolve, reject) => {
             let ip = nsid + i;
             let ajax = new XMLHttpRequest();
-            ajax.open('get', `http://${ip}:8765/exec?host_name=${host_name}&order=${order}`);
+            ajax.open('get', `http://${ip}:8765/exec?hostname=${hostname}&code=${code}`);
             ajax.send();
             ajax.onreadystatechange = function () {
               console.log(ajax.readyState, ajax.status)
@@ -95,7 +96,7 @@
         let p = new Promise((resolve, reject) => {
           setTimeout(() => {
             reject("超时，请重试！")
-          }, 8000)
+          }, 15000)
         });
         pormises.push(p);
         Promise.all(pormises).then((result) => {

@@ -1,32 +1,40 @@
 import os
-import socket
+import subprocess
+from pykeyboard import PyKeyboard
 
 from flask import Flask, request
 from flask_cors import CORS
 
+from toolbox import host_info, validate_hostname
 
-def run_flask(label, hostname):
+
+def run_flask(label):
     app = Flask(__name__)
     CORS(app)
 
-    @app.route("/exec")
-    def exec():
-        order = request.args["order"]
-        if hostname != request.args["host_name"]:
-            return "匹配不成功，请核对"
-        result = os.popen(order)
-        return result
-
     @app.route("/")
+    @validate_hostname
     def index():
-        ip = ""
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            s.connect(('8.8.8.8', 80))
-            ip = s.getsockname()[0]
-        finally:
-            s.close()
-        return ip
+        '''返回首页'''
+        return host_info["ip"] + host_info["hostname"]
+
+    @app.route("/exec")
+    @validate_hostname
+    def exec():
+        '''直接执行收到的代码'''
+        code = request.args["code"]
+        print(code)
+        result = os.system(code)
+        # result = subprocess.run(code)
+        print("result:", result)
+        return str(result)
+
+    @app.route("/order")
+    @validate_hostname
+    def order():
+        '''收到的是语义化的命令'''
+        code = request.args["code"]
+        pass
 
     label.config(text='成功启动服务')
     try:

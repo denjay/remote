@@ -5,6 +5,7 @@ __pycache__/
 
 # Project file
 config.pkl
+qrcode.png
 
 # Editor config
 .vscode

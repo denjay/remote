@@ -14,14 +14,15 @@
 import os
 import pickle
 import re
-import socket
 import sys
 import threading
 import tkinter as tk
-from service import run_flask
+
 import qrcode
 
 import setproctitle
+from service import run_flask
+from toolbox import host_info
 
 
 class Remote(object):
@@ -39,7 +40,6 @@ class Remote(object):
                       ]
         self.skin = 0
         self.mode = 1  # 0表示mini mode,1表示normal mode
-        self.hostname = socket.gethostname()
         self.button_list = []  # 按钮列表
         self.entry = None  # 文本框对象
         self.entry_content = ""
@@ -53,7 +53,7 @@ class Remote(object):
 
     def run_service(self):
         """更新hosts操作的主进程"""
-        thr = threading.Thread(target=run_flask, args=(self.label, self.hostname))
+        thr = threading.Thread(target=run_flask, args=(self.label,))
         thr.daemon = True
         thr.start()
 
@@ -63,7 +63,6 @@ class Remote(object):
             with open(sys.path[0] + '/config.pkl', 'rb') as config:
                 dic = pickle.load(config)
             self.auto = dic.get('auto')
-            self.hostname = dic.get('hostname')
             self.skin = dic.get('skin')
             self.mode = dic.get('mode')
             self.x = dic.get('x')
@@ -101,29 +100,28 @@ fi
         """保存配置到配置文件"""
         self.x = self.root.winfo_x()
         self.y = self.root.winfo_y()
-        self.hostname = self.entry_content.get()
-        dic = {'auto': self.auto, 'hostname': self.hostname, 'skin': self.skin, 'mode': self.mode, 'x': self.x, 'y': self.y}
+        dic = {'auto': self.auto, 'hostname': host_info["hostname"], 'skin': self.skin, 'mode': self.mode, 'x': self.x, 'y': self.y}
         with open(sys.path[0] + '/config.pkl', 'wb') as config:
             pickle.dump(dic, config)
 
-    def refresh_qrcode(self, *args):
-        '''动态生成二维码'''
-        # 验证输入框数据
-        data = self.entry_content.get()
-        if self.entry_content.get() != self.hostname:
-            if not re.match(r"^[0-9a-zA-Z\_\-]{0,10}$", data):
-                self.label.config(text='输入不合法')
-                self.entry_content.set(self.hostname)
-            else:
-                self.hostname = data
-                self.label.config(text='已重新生成二维码')
-
+    def generate_qrcode(self):
         qr = qrcode.QRCode(box_size=5, border=0)
-        qr.add_data(self.entry_content.get())
+        qr.add_data("http://{}:8765/".format(host_info["ip"]))
         img = qr.make_image(fill_color=self.skins[self.skin][4], back_color=self.skins[self.skin][5])
         img.save('qrcode.png')
         self.qrcode = tk.PhotoImage(file="qrcode.png")
         self.img_label["image"] = self.qrcode
+
+    def validate(self, *args):
+        '''动态生成二维码'''
+        # 验证输入框数据
+        data = self.entry_content.get()
+        if not re.match(r"^[0-9a-zA-Z\_\-]{0,10}$", data):
+            self.label.config(text='输入不合法')
+            self.entry_content.set(host_info["hostname"])
+        else:
+            host_info["hostname"] = data
+            self.label.config(text='已更新匹配码')
 
     def mini_mode(self, e):
         """切换界面显示模式"""
@@ -192,7 +190,7 @@ fi"""
     def change_skin(self):
         """切换皮肤"""
         self.skin = (self.skin + 1) % len(self.skins)
-        self.refresh_qrcode()
+        self.generate_qrcode()
         self.root["bg"] = self.skins[self.skin][0]
         self.label["fg"] = self.skins[self.skin][3]
         self.label["bg"] = self.skins[self.skin][2]
@@ -292,14 +290,14 @@ fi"""
         # 输入框
         self.entry_content = tk.StringVar()
         self.entry = tk.Entry(self.root, fg=self.skins[self.skin][3], bg=self.skins[self.skin][0], width=10, textvariable=self.entry_content, justify=tk.CENTER, highlightthickness=0.5, highlightbackground='#4F4F4F', highlightcolor='#4F4F4F', insertbackground=self.skins[self.skin][3], relief=tk.FLAT)
-        self.entry_content.set(self.hostname)
-        self.entry_content.trace_add("write", self.refresh_qrcode)
+        self.entry_content.set(host_info["hostname"])
+        self.entry_content.trace_add("write", self.validate)
         self.entry.grid(column=0, row=2, padx=3, pady=3, sticky=tk.N + tk.E + tk.S + tk.W)
         self.entry.bind('<ButtonPress-1>', self.select_text)  # 添加单击事件
 
         # 二维码界面
         self.img_label = tk.Label(self.root, width=150, height=150, fg=self.skins[self.skin][3], bg=self.skins[self.skin][0])
-        self.refresh_qrcode()
+        self.generate_qrcode()
         self.img_label.grid(column=0, columnspan=2, row=6)
         # 迷你模式时隐藏相关部件
         if not self.mode:
