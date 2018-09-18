@@ -74,7 +74,7 @@
           let p = new Promise((resolve, reject) => {
             let ip = nsid + i;
             let ajax = new XMLHttpRequest();
-            ajax.open('get', `http://${ip}:8765?host_name=${host_name}&order=${order}`);
+            ajax.open('get', `http://${ip}:8765/exec?host_name=${host_name}&order=${order}`);
             ajax.send();
             ajax.onreadystatechange = function () {
               console.log(ajax.readyState, ajax.status)

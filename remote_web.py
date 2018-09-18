@@ -17,12 +17,9 @@ import re
 import socket
 import sys
 import threading
-import time
 import tkinter as tk
-
+from service import run_flask
 import qrcode
-from flask import Flask, request
-from flask_cors import CORS
 
 import setproctitle
 
@@ -54,28 +51,9 @@ class Remote(object):
         self.img_close = None
         self.img_close_hover = None
 
-    def run_flask(self, label):
-        app = Flask(__name__)
-        CORS(app)
-
-        @app.route("/")
-        def index():
-            hostname = request.args["host_name"]
-            order = request.args["order"]
-            if hostname != self.hostname:
-                return "匹配不成功，请核对"
-            result = os.popen(order)
-            return result
-
-        label.config(text='成功启动服务')
-        try:
-            app.run(port=8765, host="0.0.0.0")
-        except OSError as e:
-            label.config(text='端口被占用')
-
     def run_service(self):
         """更新hosts操作的主进程"""
-        thr = threading.Thread(target=self.run_flask, args=(self.label,))
+        thr = threading.Thread(target=run_flask, args=(self.label, self.hostname))
         thr.daemon = True
         thr.start()
 
