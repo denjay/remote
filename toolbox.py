@@ -1,3 +1,4 @@
+import json
 import os
 import pickle
 import socket
@@ -28,9 +29,9 @@ host_info = {"hostname": hostname(), "ip": ip()}
 def validate_hostname(func):
     @wraps(func)
     def wrapper(*args, **kw):
-        if request.args["hostname"] != host_info["hostname"]:
+        data = json.loads(request.get_data())
+        if data["hostname"] != host_info["hostname"]:
             return "匹配码不正确"
         else:
             return func(*args, **kw)
-
     return wrapper
