@@ -2,7 +2,7 @@ import os
 import subprocess
 from pykeyboard import PyKeyboard
 
-from flask import Flask, request
+from flask import Flask, request, render_template
 from flask_cors import CORS
 
 from toolbox import host_info, validate_hostname
@@ -13,10 +13,9 @@ def run_flask(label):
     CORS(app)
 
     @app.route("/")
-    @validate_hostname
     def index():
         '''返回首页'''
-        return host_info["ip"] + host_info["hostname"]
+        return render_template("remote_ui.html", hostname=host_info["hostname"])
 
     @app.route("/exec")
     @validate_hostname

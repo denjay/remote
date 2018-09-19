@@ -28,7 +28,7 @@ host_info = {"hostname": hostname(), "ip": ip()}
 def validate_hostname(func):
     @wraps(func)
     def wrapper(*args, **kw):
-        if host_info["hostname"] != request.args["hostname"]:
+        if request.args["hostname"] != host_info["hostname"]:
             return "匹配码不正确"
         else:
             return func(*args, **kw)
