@@ -44,54 +44,33 @@
     window.localStorage.setItem("ip", ip)
 
     // 获取本机ip地址
-    function getIPs(callback) {
-      var ip_dups = {};
-      var useWebKit = !!window.webkitRTCPeerConnection;
-      //minimal requirements for data connection
-      var mediaConstraints = {
-        optional: [{
-          RtpDataChannels: true
-        }]
-      };
-      var servers = {
-        iceServers: [{
-          urls: "stun:stun.services.mozilla.com"
-        }]
-      };
-      //construct a new RTCPeerConnection
-      var pc = new RTCPeerConnection(servers, mediaConstraints);
+    function getIP(onNewIP) { //  onNewIp - your listener function for new IPs
+      var myPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection; //compatibility for firefox and chrome
+      var pc = new myPeerConnection({
+          iceServers: []
+        }), // 空的ICE服务器（STUN或者TURN）
+        noop = function () {},
+        localIPs = {}, //记录有没有被调用到onNewIP这个listener上
+        ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/g,
+        key;
 
-      function handleCandidate(candidate) {
-        //match just the IP address
-        var ip_regex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/
-        var ip_addr = ip_regex.exec(candidate)[1];
-        //remove duplicates
-        if (ip_dups[ip_addr] === undefined)
-          callback(ip_addr);
-        ip_dups[ip_addr] = true;
+      function ipIterate(ip) {
+        if (!localIPs[ip]) onNewIP(ip);
+        localIPs[ip] = true;
       }
-      //listen for candidate events
-      pc.onicecandidate = function (ice) {
-        //skip non-candidate events
-        if (ice.candidate)
-          handleCandidate(ice.candidate.candidate);
-      };
-      //create a bogus data channel
-      pc.createDataChannel("");
-      //create an offer sdp
-      pc.createOffer(function (result) {
-        //trigger the stun server request
-        pc.setLocalDescription(result, function () {}, function () {});
-      }, function () {});
-      //wait for a while to let everything done
-      setTimeout(function () {
-        //read candidate info from local description
-        var lines = pc.localDescription.sdp.split('\n');
-        lines.forEach(function (line) {
-          if (line.indexOf('a=candidate:') === 0)
-            handleCandidate(line);
+      pc.createDataChannel(""); //create a bogus data channel
+      pc.createOffer().then(function (sdp) {
+        sdp.sdp.split('\n').forEach(function (line) {
+          if (line.indexOf('candidate') < 0) return;
+          line.match(ipRegex).forEach(ipIterate);
         });
-      }, 1000);
+        pc.setLocalDescription(sdp, noop, noop);
+      }); // create offer and set local description
+      pc.onicecandidate = function (ice) { //listen for candidate events
+        if (!ice || !ice.candidate || !ice.candidate.candidate || !ice.candidate.candidate.match(ipRegex))
+          return;
+        ice.candidate.candidate.match(ipRegex).forEach(ipIterate);
+      };
     }
 
     // 发送请求
@@ -121,7 +100,7 @@
         ajax.send(params);
         ajax.onreadystatechange = function () {
           if (ajax.readyState == 4 && ajax.status == 200) {
-            resolve("执行成功");
+            resolve(ajax.responseText === "0" ? "执行成功" : ajax.responseText);
           }
         }
       });
@@ -137,8 +116,9 @@
         li_el.innerHTML = result
         ul_el.appendChild(li_el);
       }).catch((error) => {
-        getIPs(function (local_ip) {
-          var nsid = local_ip.split(".").slice(0, 3).join(".") + ".";
+        // 如果知道本机IP，就向所在局域网发送请求
+        getIP(function (local_ip) {
+          var nsid = local_ip.split(".").slice(0, 3).join(".") + ".";  // 网络号
           var pormises = [];
           for (var i = 1; i < 255; i++) {
             let p = new Promise((resolve, reject) => {
@@ -149,8 +129,8 @@
               ajax.send(params);
               ajax.onreadystatechange = function () {
                 if (ajax.readyState == 4 && ajax.status == 200) {
-                  window.localStorage.setItem("ip", ajax.responseURL.match(/\/\/(.*?):/)[1]);  // 更新缓存的ip
-                  resolve("执行成功");
+                  window.localStorage.setItem("ip", ajax.responseURL.match(/\/\/(.*?):/)[1]); // 更新缓存的ip
+                  resolve(ajax.responseText === "0" ? "执行成功" : ajax.responseText);
                 }
               }
             });
@@ -172,6 +152,42 @@
             ul_el.appendChild(li_el);
           })
         });
+        // 向localstorage中的网络号发送请求
+        if (window.localStorage.getItem("ip")) {
+          var nsid = window.localStorage.getItem("ip").split(".").slice(0, 3).join(".") + ".";
+          var pormises = [];
+          for (var i = 1; i < 255; i++) {
+            let p = new Promise((resolve, reject) => {
+              let ip = nsid + i;
+              let ajax = new XMLHttpRequest();
+              ajax.open('post', `http://${ip}:8765/${type}`);
+              ajax.setRequestHeader('content-type', 'application/json');
+              ajax.send(params);
+              ajax.onreadystatechange = function () {
+                if (ajax.readyState == 4 && ajax.status == 200) {
+                  window.localStorage.setItem("ip", ajax.responseURL.match(/\/\/(.*?):/)[1]); // 更新缓存的ip
+                  resolve(ajax.responseText === "0" ? "执行成功" : ajax.responseText);
+                }
+              }
+            });
+            pormises.push(p)
+          };
+          let p = new Promise((resolve, reject) => {
+            setTimeout(() => {
+              reject("超时，请重试！")
+            }, 10000)
+          });
+          pormises.push(p);
+          Promise.race(pormises).then((result) => {
+            var li_el = document.createElement("li")
+            li_el.innerHTML = result
+            ul_el.appendChild(li_el);
+          }).catch((error) => {
+            var li_el = document.createElement("li")
+            li_el.innerHTML = error;
+            ul_el.appendChild(li_el);
+          })
+        }
       })
     }
   </script>
