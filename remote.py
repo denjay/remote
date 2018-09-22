@@ -45,7 +45,6 @@ class Remote(object):
         self.entry = None  # 文本框对象
         self.entry_content = ""
         self.root = None
-        self.frame = None
         self.label = None
         self.img_label = None
         self.close_button_label = None
@@ -53,7 +52,7 @@ class Remote(object):
         self.img_close_hover = None
 
     def run_service(self):
-        """更新hosts操作的主进程"""
+        """运行服务器"""
         thr = threading.Thread(target=run_flask, args=(self.label,))
         thr.daemon = True
         thr.start()
@@ -106,16 +105,16 @@ fi
             pickle.dump(dic, config)
 
     def generate_qrcode(self):
-        qr = qrcode.QRCode(box_size=5, border=0)
-        qr.add_data("http://{}:8765/".format(host_info["ip"]))
+        '''生成二维码'''
+        qr = qrcode.QRCode(box_size=4, border=0)
+        qr.add_data("http://{}:8765/?hostname={}".format(host_info["ip"], host_info["hostname"]))
         img = qr.make_image(fill_color=self.skins[self.skin][4], back_color=self.skins[self.skin][5])
         img.save('qrcode.png')
         self.qrcode = tk.PhotoImage(file="qrcode.png")
         self.img_label["image"] = self.qrcode
 
     def validate(self, *args):
-        '''动态生成二维码'''
-        # 验证输入框数据
+        '''验证输入框数据'''
         data = self.entry_content.get()
         if not re.match(r"^[0-9a-zA-Z\_\-]{0,10}$", data):
             self.label.config(text='输入不合法')
@@ -198,7 +197,7 @@ fi"""
         self.entry["fg"] = self.skins[self.skin][3]
         self.entry["bg"] = self.skins[self.skin][0]
         self.img_label["fg"] = self.skins[self.skin][3]
-        self.img_label["bg"] = self.skins[self.skin][0]
+        self.img_label["bg"] = self.skins[self.skin][5]
         self.close_button_label["fg"] = self.skins[self.skin][3]
         self.close_button_label["bg"] = self.skins[self.skin][0]
         for bt in self.button_list:
@@ -297,9 +296,9 @@ fi"""
         self.entry.bind('<ButtonPress-1>', self.select_text)  # 添加单击事件
 
         # 二维码界面
-        self.img_label = tk.Label(self.root, width=150, height=150, fg=self.skins[self.skin][3], bg=self.skins[self.skin][0])
+        self.img_label = tk.Label(self.root, width=120, height=120, fg=self.skins[self.skin][3], bg=self.skins[self.skin][5])
         self.generate_qrcode()
-        self.img_label.grid(column=0, columnspan=2, row=6)
+        self.img_label.grid(column=0, columnspan=2, row=6, pady=8)
         # 迷你模式时隐藏相关部件
         if not self.mode:
             for child in self.root.children.values():

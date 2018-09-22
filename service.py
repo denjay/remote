@@ -1,8 +1,9 @@
 import json
+import os
 import subprocess
 from pykeyboard import PyKeyboard
 
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, send_from_directory
 from flask_cors import CORS
 
 from toolbox import host_info, validate_hostname
@@ -15,7 +16,11 @@ def run_flask(label):
     @app.route("/")
     def index():
         '''返回首页'''
-        return render_template("index.html", hostname=host_info["hostname"])
+        return render_template("index.html")
+    
+    @app.route('/favicon.ico')
+    def favicon():
+        return send_from_directory(os.path.join(app.root_path, 'assets'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
     @app.route("/exec", methods=["post"])
     @validate_hostname

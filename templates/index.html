@@ -4,12 +4,13 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <link rel="shortcut icon" href="/favicon.ico">
 </head>
 
 <body>
   <span>匹配码</span>
   
-  <input type="text" value="{{ hostname }}">
+  <input type="text">
   <br>
   <button onclick="send_code('exec', '关机', 'poweroff')">关机</button>
   <br>
@@ -30,7 +31,18 @@
   <ul></ul>
 
   <script>
-    //get the IP addresses associated with an account
+    // 获取主机名
+    var hostname
+    window.location.search.substr(1).split("&").forEach((item, index, arr)=>{
+      if(item.split("=")[0] == "hostname"){
+        hostname = item.split("=")[1]
+        document.getElementsByTagName("input")[0].value = hostname
+      }
+    })
+    // 缓存ip
+
+
+    // 获取本机ip地址
     function getIPs(callback) {
       var ip_dups = {};
       var useWebKit = !!window.webkitRTCPeerConnection;
@@ -80,7 +92,8 @@
         });
       }, 1000);
     }
-
+    
+    // 发送请求
     function send_code(type, description, code) {
       getIPs(function (local_ip) {
         var ul_el = document.getElementsByTagName("ul")[0]
@@ -105,7 +118,6 @@
             ajax.onreadystatechange = function () {
               if (ajax.readyState == 4 && ajax.status == 200) { // 请求成功
                 var li_el = document.createElement("li")
-                console.log(typeof(ajax.responseText))
                 li_el.innerHTML = "执行成功"
                 ul_el.appendChild(li_el);
                 // resolve(ajax.responseText)
@@ -125,7 +137,6 @@
         });
         pormises.push(p);
         Promise.all(pormises).then((result) => {
-          console.log(result)
         }).catch((error) => {
           if (resolved === false){
             var li_el = document.createElement("li")
