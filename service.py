@@ -15,7 +15,7 @@ def run_flask(label):
     @app.route("/")
     def index():
         '''返回首页'''
-        return render_template("remote_ui.html", hostname=host_info["hostname"])
+        return render_template("index.html", hostname=host_info["hostname"])
 
     @app.route("/exec", methods=["post"])
     @validate_hostname

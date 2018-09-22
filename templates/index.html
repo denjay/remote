@@ -3,6 +3,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 </head>
 
 <body>
@@ -11,6 +12,8 @@
   <input type="text" value="{{ hostname }}">
   <br>
   <button onclick="send_code('exec', '关机', 'poweroff')">关机</button>
+  <br>
+  <button onclick="send_code('exec', '息屏', 'xset dpms force off')">息屏</button>
   <br>
   <button onclick="send_code('exec', '打开网易云音乐', 'netease-cloud-music')">网易云音乐</button>
   <br>

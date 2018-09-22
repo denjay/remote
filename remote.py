@@ -35,6 +35,7 @@ class Remote(object):
         self.y_relative = 0  # 相对坐标y
         self.auto = 0  # 0表示不自启
         self.service_status = 0  # 0表示没有运行服务器
+        # 颜色分别是：主界面，按钮边框，消息提示框(按钮hover色)，文字，二维码前景色，二维码背景色
         self.skins = [('#1F2326', 'black', '#1F2336', '#00ffff', '#1F2326',  '#00ffff'),
                       ('#FFFFFF', '#90ee90', '#D0D0D0', '#00ced1', '#00ced1', '#FFFFFF')
                       ]
