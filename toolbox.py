@@ -29,7 +29,10 @@ host_info = {"hostname": hostname(), "ip": ip()}
 def validate_hostname(func):
     @wraps(func)
     def wrapper(*args, **kw):
-        data = json.loads(request.get_data())
+        if request.method == "POST":
+            data = json.loads(request.data)
+        elif request.method == "GET":
+            data = request.args
         if data["hostname"] != host_info["hostname"]:
             return "匹配码不正确"
         else:

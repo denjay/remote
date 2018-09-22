@@ -53,7 +53,7 @@ class Remote(object):
 
     def run_service(self):
         """运行服务器"""
-        thr = threading.Thread(target=run_flask, args=(self.label,))
+        thr = threading.Thread(target=run_flask, args=(self.label, self.root))
         thr.daemon = True
         thr.start()
 
@@ -243,9 +243,6 @@ fi"""
         self.x_relative = e.x
         self.y_relative = e.y
 
-    def select_text(self, e):
-        self.entry.select_range(0, tk.END)
-
     def run_gui(self):
         """启动软件主界面"""
         self.root = tk.Tk()
@@ -293,7 +290,6 @@ fi"""
         self.entry_content.set(host_info["hostname"])
         self.entry_content.trace_add("write", self.validate)
         self.entry.grid(column=0, row=2, padx=3, pady=3, sticky=tk.N + tk.E + tk.S + tk.W)
-        self.entry.bind('<ButtonPress-1>', self.select_text)  # 添加单击事件
 
         # 二维码界面
         self.img_label = tk.Label(self.root, width=120, height=120, fg=self.skins[self.skin][3], bg=self.skins[self.skin][5])

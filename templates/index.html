@@ -28,7 +28,9 @@
   <br>
   <button onclick="send_code('order', '音量减')">音量减</button>
   <br>
-  <ul></ul>
+  <button onclick="send_code('get_clipboard_content')">获取剪贴板内容</button>
+  <br>
+  <p></p>
 
   <script>
     // 获取主机名
@@ -73,20 +75,65 @@
       };
     }
 
+    var ul_el = document.getElementsByTagName("ul")[0]
+    // 群发请求
+    function mass(path, nsid, params) {
+      var pormises = [];
+      for (var i = 1; i < 255; i++) {
+        let p = new Promise((resolve, reject) => {
+          let ip = nsid + i;
+          let ajax = new XMLHttpRequest();
+          ajax.open('post', `http://${ip}:8765/${path}`);
+          ajax.setRequestHeader('content-type', 'application/json');
+          ajax.send(params);
+          ajax.onreadystatechange = function () {
+            if (ajax.readyState == 4 && ajax.status == 200) {
+              window.localStorage.setItem("ip", ajax.responseURL.match(/\/\/(.*?):/)[1]); // 更新缓存的ip
+              resolve(JSON.parse(ajax.responseText));
+            }
+          }
+        });
+        pormises.push(p)
+      };
+      let p = new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject("超时，请重试！")
+        }, 10000)
+      });
+      pormises.push(p);
+      Promise.race(pormises).then((result) => {
+        if (result.file_url) {
+          window.location.href = result.file_url;
+        }
+        else if (result.text) {
+          var p_el = document.getElementsByTagName("p")[0]
+          p_el.innerHTML = result.text
+        }
+        else if (result.message != undefined) {
+          alert(result.message)
+        }
+      }).catch((error) => {
+        alert(error)
+      })
+    }
+
     // 发送请求
-    function send_code(type, description, code) {
-      var ul_el = document.getElementsByTagName("ul")[0]
+    function send_code(path, description, code) {
       var hostname = document.getElementsByTagName("input")[0].value
-      if (type == 'exec') {
+      if (path == 'exec') {
         var params = {
           hostname: hostname,
           code: code,
           description: description
         };
-      } else if (type == 'order') {
+      } else if (path == 'order') {
         var params = {
           hostname: hostname,
           description: description
+        };
+      } else if (path == "get_clipboard_content") {
+        var params = {
+          hostname: hostname,
         };
       }
       params = JSON.stringify(params)
@@ -95,12 +142,12 @@
       var pormises = [];
       let p = new Promise((resolve, reject) => {
         let ajax = new XMLHttpRequest();
-        ajax.open('post', `http://${ip}:8765/${type}`);
+        ajax.open('post', `http://${ip}:8765/${path}`);
         ajax.setRequestHeader('content-type', 'application/json');
         ajax.send(params);
         ajax.onreadystatechange = function () {
           if (ajax.readyState == 4 && ajax.status == 200) {
-            resolve(ajax.responseText === "0" ? "执行成功" : ajax.responseText);
+            resolve(JSON.parse(ajax.responseText));
           }
         }
       });
@@ -112,81 +159,26 @@
       });
       pormises.push(p);
       Promise.race(pormises).then((result) => {
-        var li_el = document.createElement("li")
-        li_el.innerHTML = result
-        ul_el.appendChild(li_el);
+        if (result.file_url) {
+          window.location.href = result.file_url;
+        }
+        else if (result.text) {
+          var p_el = document.getElementsByTagName("p")[0]
+          p_el.innerHTML = result.text
+        }
+        else if (result.message != undefined) {
+          alert(result.message)
+        }
       }).catch((error) => {
         // 如果知道本机IP，就向所在局域网发送请求
         getIP(function (local_ip) {
-          var nsid = local_ip.split(".").slice(0, 3).join(".") + ".";  // 网络号
-          var pormises = [];
-          for (var i = 1; i < 255; i++) {
-            let p = new Promise((resolve, reject) => {
-              let ip = nsid + i;
-              let ajax = new XMLHttpRequest();
-              ajax.open('post', `http://${ip}:8765/${type}`);
-              ajax.setRequestHeader('content-type', 'application/json');
-              ajax.send(params);
-              ajax.onreadystatechange = function () {
-                if (ajax.readyState == 4 && ajax.status == 200) {
-                  window.localStorage.setItem("ip", ajax.responseURL.match(/\/\/(.*?):/)[1]); // 更新缓存的ip
-                  resolve(ajax.responseText === "0" ? "执行成功" : ajax.responseText);
-                }
-              }
-            });
-            pormises.push(p)
-          };
-          let p = new Promise((resolve, reject) => {
-            setTimeout(() => {
-              reject("超时，请重试！")
-            }, 10000)
-          });
-          pormises.push(p);
-          Promise.race(pormises).then((result) => {
-            var li_el = document.createElement("li")
-            li_el.innerHTML = result
-            ul_el.appendChild(li_el);
-          }).catch((error) => {
-            var li_el = document.createElement("li")
-            li_el.innerHTML = error;
-            ul_el.appendChild(li_el);
-          })
+          var nsid = local_ip.split(".").slice(0, 3).join(".") + "."; // 网络号
+          mass(path, nsid, params);
         });
         // 向localstorage中的网络号发送请求
         if (window.localStorage.getItem("ip")) {
           var nsid = window.localStorage.getItem("ip").split(".").slice(0, 3).join(".") + ".";
-          var pormises = [];
-          for (var i = 1; i < 255; i++) {
-            let p = new Promise((resolve, reject) => {
-              let ip = nsid + i;
-              let ajax = new XMLHttpRequest();
-              ajax.open('post', `http://${ip}:8765/${type}`);
-              ajax.setRequestHeader('content-type', 'application/json');
-              ajax.send(params);
-              ajax.onreadystatechange = function () {
-                if (ajax.readyState == 4 && ajax.status == 200) {
-                  window.localStorage.setItem("ip", ajax.responseURL.match(/\/\/(.*?):/)[1]); // 更新缓存的ip
-                  resolve(ajax.responseText === "0" ? "执行成功" : ajax.responseText);
-                }
-              }
-            });
-            pormises.push(p)
-          };
-          let p = new Promise((resolve, reject) => {
-            setTimeout(() => {
-              reject("超时，请重试！")
-            }, 10000)
-          });
-          pormises.push(p);
-          Promise.race(pormises).then((result) => {
-            var li_el = document.createElement("li")
-            li_el.innerHTML = result
-            ul_el.appendChild(li_el);
-          }).catch((error) => {
-            var li_el = document.createElement("li")
-            li_el.innerHTML = error;
-            ul_el.appendChild(li_el);
-          })
+          mass(path, nsid, params);
         }
       })
     }
