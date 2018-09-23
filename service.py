@@ -21,9 +21,11 @@ def run_flask(label, root):
     @app.route('/get_clipboard_content', methods=["post", "get"])
     @validate_hostname
     def get_clipboard_content():
-        text = root.clipboard_get()
+        try:
+            text = root.clipboard_get()
+        except:
+            return jsonify({"message": "剪贴板无内容"})
         # root.clipboard_clear()  # 清除剪贴板内容
-        # root.clipboard_append("xxooxx")  # 向剪贴板追加内容
         if request.method == "POST":
             if os.path.isfile(text):
                 return jsonify({"file_url": url_for("get_clipboard_content", hostname=host_info["hostname"])})
@@ -34,6 +36,14 @@ def run_flask(label, root):
             label.config(text="获取剪贴板文件")
             filename = os.path.basename(text)
             return send_file(text, mimetype='application/octet-stream', as_attachment=True, attachment_filename=filename)
+
+    @app.route('/set_clipboard_content', methods=["post"])
+    @validate_hostname
+    def set_clipboard_content():
+        content = json.loads(request.data)["content"]
+        root.clipboard_append("content")
+        label.config(text="剪贴板收到文字")
+        return jsonify({"message": "已经将文字传到电脑剪贴板"})
 
     @app.route('/favicon.ico')
     def favicon():

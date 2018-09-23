@@ -12,27 +12,36 @@
 
   <input type="text">
   <br>
-  <button onclick="send_code('exec', '关机', 'poweroff')">关机</button>
+  <button onclick="send_code('exec', {description: '关机', code: 'poweroff'})">关机</button>
   <br>
-  <button onclick="send_code('exec', '息屏', 'xset dpms force off')">息屏</button>
+  <button onclick="send_code('exec', {description: '息屏', code: 'xset dpms force off'})">息屏</button>
   <br>
-  <button onclick="send_code('exec', '打开网易云音乐', 'netease-cloud-music')">网易云音乐</button>
+  <button onclick="send_code('exec', {description: '打开网易云音乐', code:'netease-cloud-music'})">网易云音乐</button>
   <br>
-  <button onclick="send_code('order', '播放/暂停')">播放/暂停</button>
+  <button onclick="send_code('order', {description: '播放/暂停'})">播放/暂停</button>
   <br>
-  <button onclick="send_code('order', '上一曲')">上一曲</button>
+  <button onclick="send_code('order', {description: '上一曲'})">上一曲</button>
   <br>
-  <button onclick="send_code('order', '下一曲')">下一曲</button>
+  <button onclick="send_code('order', {description: '下一曲'})">下一曲</button>
   <br>
-  <button onclick="send_code('order', '音量加')">音量加</button>
+  <button onclick="send_code('order', {description: '音量加'})">音量加</button>
   <br>
-  <button onclick="send_code('order', '音量减')">音量减</button>
+  <button onclick="send_code('order', {description: '音量减'})">音量减</button>
   <br>
   <button onclick="send_code('get_clipboard_content')">获取剪贴板内容</button>
+  <br>
+  <textarea cols="30" rows="5">输入要传的文字</textarea>
+  <button onclick="set_clipboard_content()">传文字到剪贴板</button>
   <br>
   <p></p>
 
   <script>
+    function set_clipboard_content() {
+      let content = document.getElementsByTagName("textarea")[0].value
+      send_code('set_clipboard_content', {
+        content
+      })
+    }
     // 获取主机名
     var hostname
     window.location.search.substr(1).split("&").forEach((item, index, arr) => {
@@ -104,12 +113,10 @@
       Promise.race(pormises).then((result) => {
         if (result.file_url) {
           window.location.href = result.file_url;
-        }
-        else if (result.text) {
+        } else if (result.text) {
           var p_el = document.getElementsByTagName("p")[0]
           p_el.innerHTML = result.text
-        }
-        else if (result.message != undefined) {
+        } else if (result.message != undefined) {
           alert(result.message)
         }
       }).catch((error) => {
@@ -118,23 +125,14 @@
     }
 
     // 发送请求
-    function send_code(path, description, code) {
+    function send_code(path, params) {
       var hostname = document.getElementsByTagName("input")[0].value
-      if (path == 'exec') {
-        var params = {
-          hostname: hostname,
-          code: code,
-          description: description
-        };
-      } else if (path == 'order') {
-        var params = {
-          hostname: hostname,
-          description: description
-        };
-      } else if (path == "get_clipboard_content") {
-        var params = {
-          hostname: hostname,
-        };
+      if (params) {
+        params["hostname"] = hostname
+      } else {
+        params = {
+          "hostname": hostname
+        }
       }
       params = JSON.stringify(params)
       let ip = window.localStorage.getItem("ip")
@@ -161,12 +159,10 @@
       Promise.race(pormises).then((result) => {
         if (result.file_url) {
           window.location.href = result.file_url;
-        }
-        else if (result.text) {
+        } else if (result.text) {
           var p_el = document.getElementsByTagName("p")[0]
           p_el.innerHTML = result.text
-        }
-        else if (result.message != undefined) {
+        } else if (result.message != undefined) {
           alert(result.message)
         }
       }).catch((error) => {

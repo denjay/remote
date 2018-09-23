@@ -5,7 +5,7 @@ import socket
 import sys
 from functools import wraps
 
-from flask import request
+from flask import request, jsonify
 
 
 def ip():
@@ -34,7 +34,7 @@ def validate_hostname(func):
         elif request.method == "GET":
             data = request.args
         if data["hostname"] != host_info["hostname"]:
-            return "匹配码不正确"
+            return jsonify({"message": "匹配码不正确"})
         else:
             return func(*args, **kw)
     return wrapper
