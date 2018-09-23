@@ -36,12 +36,6 @@
   <p></p>
 
   <script>
-    function set_clipboard_content() {
-      let content = document.getElementsByTagName("textarea")[0].value
-      send_code('set_clipboard_content', {
-        content
-      })
-    }
     // 获取主机名
     var hostname
     window.location.search.substr(1).split("&").forEach((item, index, arr) => {
@@ -54,6 +48,7 @@
     var ip = window.location.host.split(":")[0]
     window.localStorage.setItem("ip", ip)
 
+    var local_ip = null
     // 获取本机ip地址
     function getIP(onNewIP) { //  onNewIp - your listener function for new IPs
       var myPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection; //compatibility for firefox and chrome
@@ -84,11 +79,29 @@
       };
     }
 
+    function set_clipboard_content() {
+      let content = document.getElementsByTagName("textarea")[0].value
+      send_code('set_clipboard_content', {
+        content: content
+      })
+    }
+
     var ul_el = document.getElementsByTagName("ul")[0]
-    // 群发请求
-    function mass(path, nsid, params) {
+    // 群发请求,nsid是网络号
+    function mass(path, nsid_or_ip, params) {
+      if ("ip" in nsid_or_ip) {
+        var time = 2000;
+        var nsid = nsid_or_ip.ip.split(".").slice(0, 3).join(".") + ".";
+        var start = Number(nsid_or_ip.ip.split(".")[3]);
+        var end = start + 1;
+      } else {
+        var time = 10000;
+        var nsid = nsid_or_ip.nsid;
+        var start = 0;
+        var end = 255;
+      }
       var pormises = [];
-      for (var i = 1; i < 255; i++) {
+      for (var i = start; i < end; i++) {
         let p = new Promise((resolve, reject) => {
           let ip = nsid + i;
           let ajax = new XMLHttpRequest();
@@ -99,6 +112,8 @@
             if (ajax.readyState == 4 && ajax.status == 200) {
               window.localStorage.setItem("ip", ajax.responseURL.match(/\/\/(.*?):/)[1]); // 更新缓存的ip
               resolve(JSON.parse(ajax.responseText));
+            } else if ("ip" in nsid_or_ip && ajax.readyState == 4 && ajax.status != 200) { // nsid_or_ip为ip时可跳过超时
+              reject("请求失败")
             }
           }
         });
@@ -107,21 +122,21 @@
       let p = new Promise((resolve, reject) => {
         setTimeout(() => {
           reject("超时，请重试！")
-        }, 10000)
+        }, time)
       });
       pormises.push(p);
-      Promise.race(pormises).then((result) => {
-        if (result.file_url) {
-          window.location.href = result.file_url;
-        } else if (result.text) {
-          var p_el = document.getElementsByTagName("p")[0]
-          p_el.innerHTML = result.text
-        } else if (result.message != undefined) {
-          alert(result.message)
-        }
-      }).catch((error) => {
-        alert(error)
-      })
+      return pormises
+    }
+    // 处理从服务器收到的json消息
+    function handle_response(result) {
+      if (result.file_url) {
+        window.location.href = result.file_url;
+      } else if (result.text) {
+        var p_el = document.getElementsByTagName("p")[0]
+        p_el.innerHTML = result.text
+      } else if (result.message != undefined) {
+        alert(result.message)
+      }
     }
 
     // 发送请求
@@ -137,45 +152,41 @@
       params = JSON.stringify(params)
       let ip = window.localStorage.getItem("ip")
       ip = ip ? ip : "0.0.0.0";
-      var pormises = [];
-      let p = new Promise((resolve, reject) => {
-        let ajax = new XMLHttpRequest();
-        ajax.open('post', `http://${ip}:8765/${path}`);
-        ajax.setRequestHeader('content-type', 'application/json');
-        ajax.send(params);
-        ajax.onreadystatechange = function () {
-          if (ajax.readyState == 4 && ajax.status == 200) {
-            resolve(JSON.parse(ajax.responseText));
-          }
-        }
-      });
-      pormises.push(p)
-      p = new Promise((resolve, reject) => {
-        setTimeout(() => {
-          reject("超时，请重试！")
-        }, 2000)
-      });
-      pormises.push(p);
+      let pormises = mass(path, {
+        ip: ip
+      }, params)
       Promise.race(pormises).then((result) => {
-        if (result.file_url) {
-          window.location.href = result.file_url;
-        } else if (result.text) {
-          var p_el = document.getElementsByTagName("p")[0]
-          p_el.innerHTML = result.text
-        } else if (result.message != undefined) {
-          alert(result.message)
-        }
+        handle_response(result)
       }).catch((error) => {
         // 如果知道本机IP，就向所在局域网发送请求
-        getIP(function (local_ip) {
-          var nsid = local_ip.split(".").slice(0, 3).join(".") + "."; // 网络号
-          mass(path, nsid, params);
+        getIP(function (ip) {
+          local_ip = ip
+          var nsid = ip.split(".").slice(0, 3).join(".") + "."; // 网络号
+          let pormises = mass(path, {
+            nsid: nsid
+          }, params);
+          Promise.race(pormises).then((result) => {
+            handle_response(result)
+          }).catch((error) => {
+            alert(error);
+          })
         });
         // 向localstorage中的网络号发送请求
-        if (window.localStorage.getItem("ip")) {
-          var nsid = window.localStorage.getItem("ip").split(".").slice(0, 3).join(".") + ".";
-          mass(path, nsid, params);
-        }
+        setTimeout(() => {
+          if (!local_ip) {
+            if (window.localStorage.getItem("ip")) {
+              var nsid = window.localStorage.getItem("ip").split(".").slice(0, 3).join(".") + ".";
+              let pormises = mass(path, {
+                nsid: nsid
+              }, params);
+              Promise.race(pormises).then((result) => {
+                handle_response(result)
+              }).catch((error) => {
+                alert(error);
+              })
+            }
+          }
+        }, 3000)
       })
     }
   </script>

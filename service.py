@@ -41,7 +41,7 @@ def run_flask(label, root):
     @validate_hostname
     def set_clipboard_content():
         content = json.loads(request.data)["content"]
-        root.clipboard_append("content")
+        root.clipboard_append(content)
         label.config(text="剪贴板收到文字")
         return jsonify({"message": "已经将文字传到电脑剪贴板"})
 
