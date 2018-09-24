@@ -11,12 +11,12 @@
     html {
       height: 100%;
       background-image: url(../static/img/background.jpg);
+      background-color: rgba(255, 255, 255, 0.39);
       background-position: center center;
       background-size: cover;
     }
     body {
       height: 100%;
-      background-color: rgba(255, 255, 255, 0.39);
     }
     #tabs-bar {
       position:fixed;
@@ -26,32 +26,110 @@
       z-index: 10000;
       margin-bottom: 0px;
     }
-    #topbar {
-      display: table;
-    }
-    #topbar img {
+    img {
       width: 2rem;
+      position: fixed;
+      left:5px;
+      top:5px;
     }
     #name {
-      display: table-cell;
-      vertical-align: middle;
+      position: fixed;
+      left:50px;
+      top:10px;
+      /* padding-left: 20px; */
     }
-    #topbar input {
+    #hostname {
       width: 100px;
       position: fixed;
       right:5px;
-      top:5px;
+      top:10px;
       text-align: center;
       background-color: #0000;
+    }
+    #buttons-wrapper {
+        position: relative;
+        padding-top: 90%;
+        width: 90%;
+        border-radius: 50%;
+        overflow: hidden;
+        transform: rotate(45deg);
+        transform-origin: center center;
+        box-shadow: 0px 0px 20px #6d1313ec;
+        /* border:2px solid; */
+        /* padding: 1px; */
+        margin: 100px auto;
+    }
+    #volume-plus, #next, #volume-reduction, #previous, #play-or-pause {
+        position:absolute;
+        padding-top: 50%;
+        width: 50%;
+    }
+    #play-or-pause {
+        z-index:10000;
+        border-radius: 50%;
+        background-color: rgba(29, 10, 10, 0.945);
+        left:25%;
+        top:25%;
+        border:3px solid rgba(255, 255, 255, 0.767);
+    }
+    #volume-plus {
+        background-color: green;
+        left:0px;
+        top:0px;
+    }
+    #next {
+        background-color: yellow;
+        right:0px;
+        top:0px;
+    }
+    #volume-reduction {
+        background-color: gray;
+        right:0px;
+        bottom:0px;
+    }
+    #previous {
+        background-color: pink;
+        left:0px;
+        bottom:0px;
+    }
+    #buttons-wrapper i {
+      position:absolute;
+      left:calc(50% - 20px);
+      top:calc(50% - 32px);
+      z-index: 10000;
+      transform: rotate(-45deg);
+    }
+    #message {
+      visibility: hidden;
+      height: 35px;
+      line-height: 35px;
+      text-indent: 10px;
+      color: white;
+      background-color: #00d1b2;
+      border-radius: 4px;
+      z-index: 10000;
+      position: fixed;
+      left:40px;
+      right:40px;
+      top:50px;
     }
   </style>
 </head>
 
 <body>
-  <div id="topbar">
-    <img src="../static/img/logo.png">
-    <b><span id="name">Remoe</span></b>
-    <input class="input is-primary is-small" type="text" placeholder="匹配码">
+  <!-- 消息框 -->
+  <p id="message">这是内容</p>
+  <!-- 顶部部件 -->
+  <img src="../static/img/logo.png">
+  <b><span id="name">Remoe</span></b>
+  <input id="hostname" class="input is-primary is-small" type="text" placeholder="匹配码">
+  <!-- 音乐控件 -->
+  <div id="buttons-wrapper">
+    <div id="play-or-pause"><i class="iconfont icon-play"></i></div>
+    <div id="volume-plus"><i class="iconfont icon-volumehigh"></i></div>
+    <div id="next"><i class="iconfont icon-next-m"></i></div>
+    <div id="volume-reduction"><i class="iconfont icon-volume-low"></i></div>
+    <div id="previous"><i class="iconfont icon-back-m"></i></div>
   </div>
 
   <br>
@@ -61,19 +139,10 @@
   <br>
   <button class="button is-primary" onclick="send_code('exec', {description: '打开网易云音乐', code:'netease-cloud-music'})">网易云音乐</button>
   <br>
-  <button class="button is-primary" onclick="send_code('order', {description: '播放/暂停'})">播放/暂停</button>
-  <br>
-  <button class="button is-primary" onclick="send_code('order', {description: '上一曲'})">上一曲</button>
-  <br>
-  <button class="button is-primary" onclick="send_code('order', {description: '下一曲'})">下一曲</button>
-  <br>
-  <button class="button is-primary" onclick="send_code('order', {description: '音量加'})">音量加</button>
-  <br>
-  <button class="button is-primary" onclick="send_code('order', {description: '音量减'})">音量减</button>
-  <br>
   <button class="button is-primary" onclick="send_code('get_clipboard_content')">获取剪贴板内容</button>
   <br>
   <textarea cols="30" rows="5">输入要传的文字</textarea>
+  <br>
   <button class="button is-primary" onclick="set_clipboard_content()">传文字到剪贴板</button>
   <br>
   <p></p>
@@ -82,19 +151,19 @@
     <ul>
       <li class="is-active">
         <a>
-          <span class="icon is-small"><i class="iconfont icon-computer" aria-hidden="true"></i></span>
+          <span class="icon is-small"><i class="iconfont icon-computer"></i></span>
           <span>电脑控制</span>
         </a>
       </li>
       <li>
         <a>
-          <span class="icon is-small"><i class="iconfont icon-cc-plane" aria-hidden="true"></i></span>
+          <span class="icon is-small"><i class="iconfont icon-cc-plane"></i></span>
           <span>内容传输</span>
         </a>
       </li>
       <li>
         <a>
-          <span class="icon is-small"><i class="iconfont icon-40" aria-hidden="true"></i></span>
+          <span class="icon is-small"><i class="iconfont icon-40"></i></span>
           <span>设置相关</span>
         </a>
       </li>
@@ -102,6 +171,12 @@
   </div>
 
   <script>
+    // 给按钮绑定事件
+    document.getElementById('play-or-pause').addEventListener('click', ()=>(send_code('order', {description: '播放/暂停'})))
+    document.getElementById('volume-plus').addEventListener('click', ()=>(send_code('order', {description: '音量加'})))
+    document.getElementById('next').addEventListener('click', ()=>(send_code('order', {description: '下一曲'})))
+    document.getElementById('volume-reduction').addEventListener('click', ()=>(send_code('order', {description: '音量减'})))
+    document.getElementById('previous').addEventListener('click', ()=>(send_code('order', {description: '上一曲'})))
     // 获取主机名
     var hostname
     window.location.search.substr(1).split("&").forEach((item, index, arr) => {
@@ -193,6 +268,15 @@
       pormises.push(p);
       return pormises
     }
+    // 弹出消息框
+    function show_message (message) {
+      message = (message === 0) ? "命令执行成功" : message;
+      document.getElementById("message").innerHTML = message;
+      document.getElementById("message").style.visibility='visible';
+      setTimeout(()=>{
+        document.getElementById("message").style.visibility='hidden';
+      }, 2000)
+    }
     // 处理从服务器收到的json消息
     function handle_response(result) {
       if (result.file_url) {
@@ -201,7 +285,7 @@
         var p_el = document.getElementsByTagName("p")[0]
         p_el.innerHTML = result.text
       } else if (result.message != undefined) {
-        alert(result.message)
+        show_message(result.message)
       }
     }
 
@@ -234,7 +318,7 @@
           Promise.race(pormises).then((result) => {
             handle_response(result)
           }).catch((error) => {
-            alert(error);
+            show_message(error);
           })
         });
         // 向localstorage中的网络号发送请求
@@ -248,7 +332,7 @@
               Promise.race(pormises).then((result) => {
                 handle_response(result)
               }).catch((error) => {
-                alert(error);
+                show_message(error);
               })
             }
           }
