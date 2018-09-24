@@ -5,35 +5,101 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="stylesheet" href="../static/css/bulma.min.css" />
+  <link rel="stylesheet" href="../static/css/iconfont.css" />
+  <style>
+    html {
+      height: 100%;
+      background-image: url(../static/img/background.jpg);
+      background-position: center center;
+      background-size: cover;
+    }
+    body {
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.39);
+    }
+    #tabs-bar {
+      position:fixed;
+      bottom:0;
+      left: 0;
+      right: 0;
+      z-index: 10000;
+      margin-bottom: 0px;
+    }
+    #topbar {
+      display: table;
+    }
+    #topbar img {
+      width: 2rem;
+    }
+    #name {
+      display: table-cell;
+      vertical-align: middle;
+    }
+    #topbar input {
+      width: 100px;
+      position: fixed;
+      right:5px;
+      top:5px;
+      text-align: center;
+      background-color: #0000;
+    }
+  </style>
 </head>
 
 <body>
-  <span>匹配码</span>
+  <div id="topbar">
+    <img src="../static/img/logo.png">
+    <b><span id="name">Remoe</span></b>
+    <input class="input is-primary is-small" type="text" placeholder="匹配码">
+  </div>
 
-  <input type="text">
   <br>
-  <button onclick="send_code('exec', {description: '关机', code: 'poweroff'})">关机</button>
+  <button class="button is-primary" onclick="send_code('exec', {description: '关机', code: 'poweroff'})">关机</button>
   <br>
-  <button onclick="send_code('exec', {description: '息屏', code: 'xset dpms force off'})">息屏</button>
+  <button class="button is-primary" onclick="send_code('exec', {description: '息屏', code: 'xset dpms force off'})">息屏</button>
   <br>
-  <button onclick="send_code('exec', {description: '打开网易云音乐', code:'netease-cloud-music'})">网易云音乐</button>
+  <button class="button is-primary" onclick="send_code('exec', {description: '打开网易云音乐', code:'netease-cloud-music'})">网易云音乐</button>
   <br>
-  <button onclick="send_code('order', {description: '播放/暂停'})">播放/暂停</button>
+  <button class="button is-primary" onclick="send_code('order', {description: '播放/暂停'})">播放/暂停</button>
   <br>
-  <button onclick="send_code('order', {description: '上一曲'})">上一曲</button>
+  <button class="button is-primary" onclick="send_code('order', {description: '上一曲'})">上一曲</button>
   <br>
-  <button onclick="send_code('order', {description: '下一曲'})">下一曲</button>
+  <button class="button is-primary" onclick="send_code('order', {description: '下一曲'})">下一曲</button>
   <br>
-  <button onclick="send_code('order', {description: '音量加'})">音量加</button>
+  <button class="button is-primary" onclick="send_code('order', {description: '音量加'})">音量加</button>
   <br>
-  <button onclick="send_code('order', {description: '音量减'})">音量减</button>
+  <button class="button is-primary" onclick="send_code('order', {description: '音量减'})">音量减</button>
   <br>
-  <button onclick="send_code('get_clipboard_content')">获取剪贴板内容</button>
+  <button class="button is-primary" onclick="send_code('get_clipboard_content')">获取剪贴板内容</button>
   <br>
   <textarea cols="30" rows="5">输入要传的文字</textarea>
-  <button onclick="set_clipboard_content()">传文字到剪贴板</button>
+  <button class="button is-primary" onclick="set_clipboard_content()">传文字到剪贴板</button>
   <br>
   <p></p>
+
+  <div class="tabs is-toggle is-fullwidth" id="tabs-bar">
+    <ul>
+      <li class="is-active">
+        <a>
+          <span class="icon is-small"><i class="iconfont icon-computer" aria-hidden="true"></i></span>
+          <span>电脑控制</span>
+        </a>
+      </li>
+      <li>
+        <a>
+          <span class="icon is-small"><i class="iconfont icon-cc-plane" aria-hidden="true"></i></span>
+          <span>内容传输</span>
+        </a>
+      </li>
+      <li>
+        <a>
+          <span class="icon is-small"><i class="iconfont icon-40" aria-hidden="true"></i></span>
+          <span>设置相关</span>
+        </a>
+      </li>
+    </ul>
+  </div>
 
   <script>
     // 获取主机名
