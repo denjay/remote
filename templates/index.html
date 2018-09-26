@@ -192,6 +192,16 @@
     // 缓存当前ip
     var ip = window.location.host.split(":")[0]
     window.localStorage.setItem("ip", ip)
+    // 旋转特效
+    var degree = 45
+
+    setInterval(()=>{
+      degree += 0.2;
+      document.getElementById('buttons-wrapper').style.transform = `rotate(${degree}deg)`;
+      document.querySelectorAll("#buttons-wrapper i").forEach((currentValue, index, arr)=>{
+        currentValue.style.transform = `rotate(-${degree}deg)`
+      })
+    },25)
 
     var local_ip = null
     // 获取本机ip地址
