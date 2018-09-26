@@ -78,6 +78,10 @@ def run_flask(label, root):
         description = data["description"]
         if description not in key_map:
             return jsonify({"message": "找不到相应的快捷键"})
+        # 判断是否打开了网易云音乐
+        if description in ["播放/暂停", "上一曲", "下一曲", "音量加", "音量减"] and subprocess.run("pgrep netease-cloud-m", shell=True).returncode == 1:
+            subprocess.call("netease-cloud-music &", shell=True)
+            time.sleep(2)
         keys_comb = key_map[description]
         if isinstance(keys_comb, tuple):
             for item in keys_comb:

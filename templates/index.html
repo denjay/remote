@@ -10,7 +10,8 @@
   <style>
     html {
       height: 100%;
-      overflow: 'hidden';
+      overflow: hidden;
+      text-align: center;
       background-image: url(../static/img/background.jpg);
       background-color: rgba(255, 255, 255, 0.39);
       background-position: center center;
@@ -111,6 +112,15 @@
       right:40px;
       top:50px;
     }
+    .icon-yonghu {
+      position: fixed;
+      right:85px;
+      top:12px;
+    }
+    textarea {
+      background-color: #0000;
+      width: 90%;
+    }
   </style>
 </head>
 
@@ -121,9 +131,10 @@
   <img src="../static/img/logo.png">
   <b><span id="name">Remoe</span></b>
   <input id="hostname" class="input is-primary is-small" type="text" placeholder="匹配码">
+  <i class="iconfont icon-yonghu"></i>
   <!-- 音乐控件 -->
   <div id="buttons-wrapper">
-    <div id="play-or-pause"><i class="iconfont icon-play"></i></div>
+    <div id="play-or-pause"><i class="iconfont icon-bofangzanting"></i></div>
     <div id="volume-plus"><i class="iconfont icon-volumehigh"></i></div>
     <div id="next"><i class="iconfont icon-next-m"></i></div>
     <div id="volume-reduction"><i class="iconfont icon-volume-low"></i></div>
@@ -135,9 +146,7 @@
   <button class="button is-primary" onclick="send_code('hot_key', {description: '待机'})">待机</button>
   <button class="button is-primary" onclick="send_code('exec', {description: '息屏', code: 'xset dpms force off'})">息屏</button>
   <br>
-  <button class="button is-primary" onclick="send_code('exec', {description: '打开网易云音乐', code:'netease-cloud-music'})">网易云音乐</button>
-  <br>
-  <textarea cols="30" rows="5">输入要传的文字</textarea>
+  <textarea rows="5">输入要传的文字</textarea>
   <br>
   <button class="button is-primary" onclick="set_clipboard_content()">传文字到剪贴板</button>
   <button class="button is-primary" onclick="send_code('get_clipboard_content')">获取剪贴板内容</button>
