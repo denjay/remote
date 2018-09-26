@@ -10,13 +10,11 @@
   <style>
     html {
       height: 100%;
+      overflow: 'hidden';
       background-image: url(../static/img/background.jpg);
       background-color: rgba(255, 255, 255, 0.39);
       background-position: center center;
       background-size: cover;
-    }
-    body {
-      height: 100%;
     }
     #tabs-bar {
       position:fixed;
@@ -57,7 +55,7 @@
         box-shadow: 0px 0px 20px #6d1313ec;
         /* border:2px solid; */
         /* padding: 1px; */
-        margin: 100px auto;
+        margin: 100px 20px auto;
     }
     #volume-plus, #next, #volume-reduction, #previous, #play-or-pause {
         position:absolute;
@@ -134,18 +132,15 @@
 
   <br>
   <button class="button is-primary" onclick="send_code('exec', {description: '关机', code: 'poweroff'})">关机</button>
-  <br>
+  <button class="button is-primary" onclick="send_code('hot_key', {description: '待机'})">待机</button>
   <button class="button is-primary" onclick="send_code('exec', {description: '息屏', code: 'xset dpms force off'})">息屏</button>
   <br>
   <button class="button is-primary" onclick="send_code('exec', {description: '打开网易云音乐', code:'netease-cloud-music'})">网易云音乐</button>
   <br>
-  <button class="button is-primary" onclick="send_code('get_clipboard_content')">获取剪贴板内容</button>
-  <br>
   <textarea cols="30" rows="5">输入要传的文字</textarea>
   <br>
   <button class="button is-primary" onclick="set_clipboard_content()">传文字到剪贴板</button>
-  <br>
-  <p></p>
+  <button class="button is-primary" onclick="send_code('get_clipboard_content')">获取剪贴板内容</button>
 
   <div class="tabs is-toggle is-fullwidth" id="tabs-bar">
     <ul>
@@ -172,11 +167,11 @@
 
   <script>
     // 给按钮绑定事件
-    document.getElementById('play-or-pause').addEventListener('click', ()=>(send_code('order', {description: '播放/暂停'})))
-    document.getElementById('volume-plus').addEventListener('click', ()=>(send_code('order', {description: '音量加'})))
-    document.getElementById('next').addEventListener('click', ()=>(send_code('order', {description: '下一曲'})))
-    document.getElementById('volume-reduction').addEventListener('click', ()=>(send_code('order', {description: '音量减'})))
-    document.getElementById('previous').addEventListener('click', ()=>(send_code('order', {description: '上一曲'})))
+    document.getElementById('play-or-pause').addEventListener('click', ()=>(send_code('hot_key', {description: '播放/暂停'})))
+    document.getElementById('volume-plus').addEventListener('click', ()=>(send_code('hot_key', {description: '音量加'})))
+    document.getElementById('next').addEventListener('click', ()=>(send_code('hot_key', {description: '下一曲'})))
+    document.getElementById('volume-reduction').addEventListener('click', ()=>(send_code('hot_key', {description: '音量减'})))
+    document.getElementById('previous').addEventListener('click', ()=>(send_code('hot_key', {description: '上一曲'})))
     // 获取主机名
     var hostname
     window.location.search.substr(1).split("&").forEach((item, index, arr) => {
@@ -282,8 +277,8 @@
       if (result.file_url) {
         window.location.href = result.file_url;
       } else if (result.text) {
-        var p_el = document.getElementsByTagName("p")[0]
-        p_el.innerHTML = result.text
+        var textarea_el = document.getElementsByTagName("textarea")[0]
+        textarea_el.value = result.text
       } else if (result.message != undefined) {
         show_message(result.message)
       }

@@ -1,4 +1,5 @@
 import json
+import time
 import os
 import subprocess
 from pykeyboard import PyKeyboard
@@ -60,10 +61,10 @@ def run_flask(label, root):
         label.config(text=description)
         return jsonify({"message": result})
 
-    @app.route("/order", methods=["post"])
+    @app.route("/hot_key", methods=["post"])
     @validate_hostname
-    def order():
-        '''收到的是语义化的命令'''
+    def hot_key():
+        '''快捷键命令'''
         k = PyKeyboard()
         key_map = {
             "播放/暂停": [k.control_key, k.alt_key, "p"],
@@ -71,15 +72,26 @@ def run_flask(label, root):
             "下一曲": [k.control_key, k.alt_key, k.right_key],
             "音量加": [k.control_key, k.alt_key, k.up_key],
             "音量减": [k.control_key, k.alt_key, k.down_key],
+            "待机": ([k.control_key, k.alt_key, k.delete_key], k.left_key, k.enter_key),
         }
         data = json.loads(request.data)
         description = data["description"]
-        if description in key_map:
-            k.press_keys(key_map[description])
-            label.config(text=description)
-            return jsonify({"message": 0})
-        else:
+        if description not in key_map:
             return jsonify({"message": "找不到相应的快捷键"})
+        keys_comb = key_map[description]
+        if isinstance(keys_comb, tuple):
+            for item in keys_comb:
+                time.sleep(0.1)
+                if isinstance(item, list):
+                    k.press_keys(item)
+                else:
+                    k.tap_key(item)
+        elif isinstance(keys_comb, list):
+            k.press_keys(keys_comb)
+        else:
+            k.tap_key(keys_comb)
+        label.config(text=description)
+        return jsonify({"message": 0})
 
     label.config(text='成功启动服务')
     try:
