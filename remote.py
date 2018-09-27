@@ -261,8 +261,8 @@ fi"""
         self.root.bind('<Button-1>', self.click)
         self.root.bind('<B1-Motion>', self.move)
         # 标题栏及关闭按钮
-        self.img_close = tk.PhotoImage(file="./assets/titlebutton-close.png")
-        self.img_close_hover = tk.PhotoImage(file="./assets/titlebutton-close-hover.png")
+        self.img_close = tk.PhotoImage(file=sys.path[0] + "/assets/titlebutton-close.png")
+        self.img_close_hover = tk.PhotoImage(file=sys.path[0] + "/assets/titlebutton-close-hover.png")
         self.close_button_label = tk.Label(self.root, image=self.img_close, width=20, height=20, fg=self.skins[self.skin][3], bg=self.skins[self.skin][0])
         self.close_button_label.grid(column=1, ipadx=2, sticky=tk.E)
         self.close_button_label.bind('<ButtonPress-1>', self.quit)  # 添加单击事件

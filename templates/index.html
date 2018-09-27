@@ -25,6 +25,21 @@
       z-index: 10000;
       margin-bottom: 0px;
     }
+    #tabs-bar li {
+      float: left;
+      color: white;
+      width: calc((100% - 3px) / 3);
+      border-left: 1px #00D1B2 solid;
+      border-top: 2px #00D1B2 solid;
+    }
+    #tabs-bar ul {
+      background-color: rgba(0, 209, 178, 0.486);
+      height: 45px;
+      line-height: 40px;
+    }
+    #tabs-bar ul li:first-child {
+      border-top: 2px yellow solid;
+    }
     img {
       width: 2rem;
       position: fixed;
@@ -33,7 +48,7 @@
     }
     #name {
       position: fixed;
-      left:50px;
+      left:40px;
       top:10px;
       /* padding-left: 20px; */
     }
@@ -46,17 +61,20 @@
       background-color: #0000;
     }
     #buttons-wrapper {
-        position: relative;
-        padding-top: 90%;
-        width: 90%;
-        border-radius: 50%;
-        overflow: hidden;
-        transform: rotate(45deg);
-        transform-origin: center center;
-        box-shadow: 0px 0px 20px #6d1313ec;
-        /* border:2px solid; */
-        /* padding: 1px; */
-        margin: 100px 20px auto;
+      position: relative;
+      padding-top: 90%;
+      width: 90%;
+      border-radius: 50%;
+      overflow: hidden;
+      transform: rotate(45deg);
+      transform-origin: center center;
+      box-shadow: 0px 0px 20px #6d1313ec;
+      /* border:2px solid; */
+      /* padding: 1px; */
+      margin: 50px auto;
+    }
+    #container {
+      margin-top: 100px;
     }
     #volume-plus, #next, #volume-reduction, #previous, #play-or-pause {
         position:absolute;
@@ -115,61 +133,72 @@
     .icon-yonghu {
       position: fixed;
       right:85px;
-      top:12px;
+      top:10px;
     }
     textarea {
       background-color: #0000;
-      width: 90%;
+      width: 80%;
     }
+    #transport, #set {
+      display: none;
+    }
+
   </style>
 </head>
 
 <body>
-  <!-- 消息框 -->
-  <p id="message">这是内容</p>
-  <!-- 顶部部件 -->
-  <img src="../static/img/logo.png">
-  <b><span id="name">Remoe</span></b>
-  <input id="hostname" class="input is-primary is-small" type="text" placeholder="匹配码">
-  <i class="iconfont icon-yonghu"></i>
-  <!-- 音乐控件 -->
-  <div id="buttons-wrapper">
-    <div id="play-or-pause"><i class="iconfont icon-bofangzanting"></i></div>
-    <div id="volume-plus"><i class="iconfont icon-volumehigh"></i></div>
-    <div id="next"><i class="iconfont icon-next-m"></i></div>
-    <div id="volume-reduction"><i class="iconfont icon-volume-low"></i></div>
-    <div id="previous"><i class="iconfont icon-back-m"></i></div>
+  <div id="header">
+    <!-- 消息框 -->
+    <p id="message">这是内容</p>
+    <!-- 顶部部件 -->
+    <img src="../static/img/logo.png">
+    <b><span id="name">Remoe</span></b>
+    <input id="hostname" class="input is-primary is-small" type="text" placeholder="匹配码">
+    <i class="iconfont icon-yonghu"></i>
   </div>
 
-  <br>
-  <button class="button is-primary" onclick="send_code('exec', {description: '关机', code: 'poweroff'})">关机</button>
-  <button class="button is-primary" onclick="send_code('hot_key', {description: '待机'})">待机</button>
-  <button class="button is-primary" onclick="send_code('exec', {description: '息屏', code: 'xset dpms force off'})">息屏</button>
-  <br>
-  <textarea rows="5">输入要传的文字</textarea>
-  <br>
-  <button class="button is-primary" onclick="set_clipboard_content()">传文字到剪贴板</button>
-  <button class="button is-primary" onclick="send_code('get_clipboard_content')">获取剪贴板内容</button>
+  <div id="container">
+    <div id="control">
+      <!-- 音乐控件 -->
+      <div id="buttons-wrapper">
+        <div id="play-or-pause"><i class="iconfont icon-bofangzanting"></i></div>
+        <div id="volume-plus"><i class="iconfont icon-volumehigh"></i></div>
+        <div id="next"><i class="iconfont icon-next-m"></i></div>
+        <div id="volume-reduction"><i class="iconfont icon-volume-low"></i></div>
+        <div id="previous"><i class="iconfont icon-back-m"></i></div>
+      </div>
+      <!-- 电源控制 -->
+      <button class="button is-primary" onclick="send_code('exec', {description: '关机', code: 'poweroff'})">关机</button>
+      <button class="button is-primary" onclick="send_code('hot_key', {description: '待机'})">待机</button>
+      <button class="button is-primary" onclick="send_code('exec', {description: '息屏', code: 'xset dpms force off'})">息屏</button>
+    </div>
 
-  <div class="tabs is-toggle is-fullwidth" id="tabs-bar">
+    <!-- 传输界面 -->
+    <div id="transport">
+      <textarea rows="5">输入要传的文字</textarea>
+      <br>
+      <button class="button is-primary" onclick="set_clipboard_content()">传文字到剪贴板</button>
+      <button class="button is-primary" onclick="send_code('get_clipboard_content')">获取剪贴板内容</button>
+    </div>
+
+    <!-- 设置界面 -->
+    <div id="set"></div>
+  </div>
+
+  <!-- 底部tab -->
+  <div id="tabs-bar">
     <ul>
-      <li class="is-active">
-        <a>
-          <span class="icon is-small"><i class="iconfont icon-computer"></i></span>
-          <span>电脑控制</span>
-        </a>
+      <li>
+          <i class="iconfont icon-computer"></i>
+          <b>电脑控制</b>
       </li>
       <li>
-        <a>
-          <span class="icon is-small"><i class="iconfont icon-cc-plane"></i></span>
-          <span>内容传输</span>
-        </a>
+          <i class="iconfont icon-cc-plane"></i>
+          <b>内容传输</b>
       </li>
       <li>
-        <a>
-          <span class="icon is-small"><i class="iconfont icon-40"></i></span>
-          <span>设置相关</span>
-        </a>
+          <i class="iconfont icon-40"></i>
+          <b>设置相关</b>
       </li>
     </ul>
   </div>
@@ -181,6 +210,27 @@
     document.getElementById('next').addEventListener('click', ()=>(send_code('hot_key', {description: '下一曲'})))
     document.getElementById('volume-reduction').addEventListener('click', ()=>(send_code('hot_key', {description: '音量减'})))
     document.getElementById('previous').addEventListener('click', ()=>(send_code('hot_key', {description: '上一曲'})))
+    // 给tabs绑定事件
+    document.querySelectorAll("ul li").forEach((item, index) => {
+        item.addEventListener("click", ()=>{toggle(index)})
+    });
+    function toggle(index_outer) {
+      document.querySelectorAll("#container > div").forEach((item, index_inner) => {
+        if (index_inner === index_outer) {
+          item.style.display = "inline";
+        } else {
+          item.style.display = "none";
+        }
+      });
+      document.querySelectorAll("ul li").forEach((item, index_inner) => {
+        if (index_inner === index_outer) {
+          item.style.borderTop = "2px yellow solid"
+        } else {
+          item.style.borderTop = "2px #00D1B2 solid"
+        }
+      });
+    }
+
     // 获取主机名
     var hostname
     window.location.search.substr(1).split("&").forEach((item, index, arr) => {
