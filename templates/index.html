@@ -142,7 +142,43 @@
     #transport, #set {
       display: none;
     }
-
+    .switch {
+      background-color: rgb(19, 206, 102);
+      position: relative;
+      width: 40px;
+      height: 20px;
+      border: 1px solid #dcdfe6;
+      outline: none;
+      border-radius: 10px;
+      box-sizing: border-box;
+      cursor: pointer;
+      transition: border-color .3s,background-color .3s;
+      vertical-align: middle;
+    }
+    .switch:after {
+      content: "";
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      border-radius: 100%;
+      transition: all .3s;
+      width: 16px;
+      height: 16px;
+      background-color: #fff;
+    }
+    #set span {
+      float: left;
+      margin-right: 20px;
+      font-size: 20px;
+    }
+    #set div {
+      margin: 20px auto;
+      width: 90%;
+      display: flex;
+      align-items:Center;
+      height: 40px;
+      border-bottom: 1px  rgba(19, 206, 103, 0.452) solid;
+    }
   </style>
 </head>
 
@@ -175,14 +211,27 @@
 
     <!-- 传输界面 -->
     <div id="transport">
-      <textarea rows="5">输入要传的文字</textarea>
+      <textarea rows="5" placeholder="输入要传送的文字"></textarea>
       <br>
       <button class="button is-primary" onclick="set_clipboard_content()">传文字到剪贴板</button>
       <button class="button is-primary" onclick="send_code('get_clipboard_content')">获取剪贴板内容</button>
     </div>
 
     <!-- 设置界面 -->
-    <div id="set"></div>
+    <div id="set">
+      <div>
+        <span class="switch"></span>
+        <span>音乐控件旋转</span>
+      </div>
+      <div>
+        <span class="switch"></span>
+        <span>显示所有消息</span>
+      </div>
+      <div>
+        <span class="switch"></span>
+        <span>电脑执行命令后息屏</span>
+      </div>
+    </div>
   </div>
 
   <!-- 底部tab -->
