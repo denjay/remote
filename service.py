@@ -7,7 +7,7 @@ from pykeyboard import PyKeyboard
 from flask import Flask, request, render_template, send_from_directory, send_file, redirect, url_for, jsonify
 from flask_cors import CORS
 
-from toolbox import host_info, validate_hostname
+from toolbox import host_info, validate_hostname, close_screen
 
 
 def run_flask(label, root):
@@ -62,6 +62,7 @@ def run_flask(label, root):
         return jsonify({"message": result})
 
     @app.route("/hot_key", methods=["post"])
+    @close_screen
     @validate_hostname
     def hot_key():
         '''快捷键命令'''

@@ -3,6 +3,7 @@ import os
 import pickle
 import socket
 import sys
+import subprocess
 from functools import wraps
 
 from flask import request, jsonify
@@ -37,4 +38,13 @@ def validate_hostname(func):
             return jsonify({"message": "匹配码不正确"})
         else:
             return func(*args, **kw)
+    return wrapper
+
+
+def close_screen(func):
+    @wraps(func)
+    def wrapper(*args, **kw):
+        result = func(*args, **kw)
+        subprocess.call("xset dpms force off &", shell=True)
+        return result
     return wrapper

@@ -33,8 +33,8 @@ class Remote(object):
         self.y = 0  # 窗口y坐标
         self.x_relative = 0  # 相对坐标x
         self.y_relative = 0  # 相对坐标y
-        self.auto = 0  # 0表示不自启
-        self.service_status = 0  # 0表示没有运行服务器
+        self.auto_starts = 0  # 0表示不自启
+        self.close_screen = 0  # 0表示执行命令后不自动息屏
         # 颜色分别是：主界面，按钮边框，消息提示框(按钮hover色)，文字，二维码前景色，二维码背景色
         self.skins = [('#1F2326', 'black', '#1F2336', '#00ffff', '#1F2326',  '#00ffff'),
                       ('#FFFFFF', '#90ee90', '#D0D0D0', '#00ced1', '#00ced1', '#FFFFFF')
@@ -62,7 +62,7 @@ class Remote(object):
         if os.path.exists(sys.path[0] + '/config.pkl'):
             with open(sys.path[0] + '/config.pkl', 'rb') as config:
                 dic = pickle.load(config)
-            self.auto = dic.get('auto')
+            self.auto_starts = dic.get('auto_starts')
             self.skin = dic.get('skin')
             self.mode = dic.get('mode')
             self.x = dic.get('x')
@@ -100,7 +100,7 @@ fi
         """保存配置到配置文件"""
         self.x = self.root.winfo_x()
         self.y = self.root.winfo_y()
-        dic = {'auto': self.auto, 'hostname': host_info["hostname"], 'skin': self.skin, 'mode': self.mode, 'x': self.x, 'y': self.y}
+        dic = {'auto_starts': self.auto_starts, 'hostname': host_info["hostname"], 'skin': self.skin, 'mode': self.mode, 'x': self.x, 'y': self.y}
         with open(sys.path[0] + '/config.pkl', 'wb') as config:
             pickle.dump(dic, config)
 
@@ -165,7 +165,7 @@ fi
         sub_label.bind('<Button-1>', close_dialog)
         sub_label.pack()
 
-    def auto_starts(self):
+    def set_auto_starts(self):
         """设置是否开机后台启动"""
         PATH = os.environ['HOME'] + '/.profile'
         content = """
@@ -174,18 +174,18 @@ if [ -e "{0}" ]; then
     . {0} &
 fi"""
         script = content.format(sys.path[0] + '/run.sh')
-        if self.auto == 0:
-            self.auto = 1
+        if self.auto_starts == 0:
+            self.auto_starts = 1
             with open(PATH, 'a') as f:
                 f.write(script)
         else:
-            self.auto = 0
+            self.auto_starts = 0
             with open(PATH, 'r+') as f:
                 result = f.read().replace(script, '')
                 f.truncate(0)
                 f.seek(0, 0)
                 f.write(result)
-        self.button_list[1]['text'] = ('开机自启', '取消自启')[self.auto]
+        self.button_list[1]['text'] = ('开机自启', '取消自启')[self.auto_starts]
 
     def change_skin(self):
         """切换皮肤"""
@@ -275,7 +275,7 @@ fi"""
         self.label.bind('<Button-3>', self.quit)
         # 按钮组
         button_configs = [
-            (('开机自启', '取消自启')[self.auto], self.auto_starts, 1, 2),
+            (('开机自启', '取消自启')[self.auto_starts], self.set_auto_starts, 1, 2),
             ('切换主题', self.change_skin, 0, 3),
             ('软件说明', self.dialog, 1, 3),
             ]
