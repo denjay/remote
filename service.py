@@ -7,7 +7,7 @@ from pykeyboard import PyKeyboard
 from flask import Flask, request, render_template, send_from_directory, send_file, redirect, url_for, jsonify
 from flask_cors import CORS
 
-from toolbox import host_info, validate_hostname, close_screen
+from toolbox import config, validate_hostname, close_screen
 
 
 def run_flask(label, root):
@@ -29,7 +29,7 @@ def run_flask(label, root):
         # root.clipboard_clear()  # 清除剪贴板内容
         if request.method == "POST":
             if os.path.isfile(text):
-                return jsonify({"file_url": url_for("get_clipboard_content", hostname=host_info["hostname"])})
+                return jsonify({"file_url": url_for("get_clipboard_content", hostname=config.hostname)})
             else:
                 label.config(text="获取剪贴板文字")
                 return jsonify({"text": text})
