@@ -4,7 +4,7 @@ import os
 import subprocess
 from pykeyboard import PyKeyboard
 
-from flask import Flask, request, render_template, send_from_directory, send_file, redirect, url_for, jsonify
+from flask import Flask, request, render_template, send_from_directory, send_file, url_for, jsonify
 from flask_cors import CORS
 
 from toolbox import config, validate_hostname, close_screen

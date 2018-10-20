@@ -5,5 +5,6 @@ pip3 install qrcode[pil]
 pip3 install -U flask-cors
 sudo pip3 install PyUserInput
 
+没用到：
 pip3 install setproctitle
 setproctitle.setproctitle("要修改为的进程名")

@@ -12,7 +12,6 @@
 """
 
 import os
-import pickle
 import re
 import sys
 import threading
@@ -20,7 +19,6 @@ import tkinter as tk
 
 import qrcode
 
-import setproctitle
 from service import run_flask
 from toolbox import config
 
@@ -67,6 +65,7 @@ class Remote(object):
             self.entry_content.set(config.hostname)
         else:
             config.hostname = data
+            self.generate_qrcode()
             self.label.config(text='已更新匹配码')
 
     def mini_mode(self, e):
