@@ -62,8 +62,8 @@ def run_flask(label, root):
         return jsonify({"message": result})
 
     @app.route("/hot_key", methods=["post"])
-    @close_screen
     @validate_hostname
+    @close_screen
     def hot_key():
         '''快捷键命令'''
         k = PyKeyboard()

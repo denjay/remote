@@ -88,16 +88,6 @@ Terminal=false
             with open(path, 'w+') as f:
                 f.write(content)
 
-            # 创建run.sh脚本
-            command = """#!/bin/sh
-if [ -e {0} ]; then
-    sleep 1m
-    python3 "{0}" 1
-fi
-            """.format(sys.path[0] + '/remote.py')
-            with open(sys.path[0] + '/run.sh', 'w+') as f:
-                f.write(command)
-
     def save_config(self):
         """保存配置到配置文件"""
         dic = {

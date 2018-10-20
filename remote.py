@@ -11,7 +11,6 @@
 4、成功，以后可以从启动器打开
 """
 
-import os
 import re
 import sys
 import threading
@@ -82,56 +81,6 @@ class Remote(object):
                     child.grid_remove()
             self.root.geometry('+{}+{}'.format(config.x, config.y + 20))
 
-    def dialog(self):
-        """显示软件说明"""
-
-        def close_dialog(e):
-            dialog.destroy()
-
-        dialog = tk.Toplevel(self.root)
-        dialog.overrideredirect(True)
-        dialog.geometry(
-            '+{}+{}'.format(self.root.winfo_screenwidth() // 2 - 180, self.root.winfo_screenheight() // 2 - 135))
-        dialog["background"] = self.skins[config.skin][0]
-        dialog.resizable(False, False)
-        dialog.wm_attributes('-topmost', 1)
-        content = """    软件：Hosts助手    软件版本：{}     作者：杰哥
-    说明：hosts文件源来自互联网，本人不保证安全，可自行修改。
-    如果修改后发现有问题，可以点击还原hosts按钮，还原到最初。
-    替换hosts文件后可能不会立即生效，可以关闭/开启网络，或
-    启用/禁用飞行模式让域名解析立即生效。
-    开机自启表示软件会在开机时在后台启动并自动更新hosts，直
-    到成功。软件选择地址列表中连接最快的作为源文件，各源内容
-    不相同。更新hosts完成后，地址显示红色的表示超时或者失效，
-    显示绿色的表示最终的hosts文件来源。"""
-        sub_label = tk.Label(dialog, text=content.format(config.version),
-                             justify=tk.LEFT, anchor=tk.W, fg=self.skins[config.skin][3], relief=tk.FLAT,
-                             highlightthickness=0.4, bg=self.skins[config.skin][0], width=51, height=10)
-        sub_label.bind('<Button-1>', close_dialog)
-        sub_label.pack()
-
-    def set_auto_starts(self):
-        """设置是否开机后台启动"""
-        PATH = os.environ['HOME'] + '/.profile'
-        content = """
-# For Hosts assistant
-if [ -e "{0}" ]; then
-    . {0} &
-fi"""
-        script = content.format(sys.path[0] + '/run.sh')
-        if config.auto_starts == 0:
-            config.auto_starts = 1
-            with open(PATH, 'a') as f:
-                f.write(script)
-        else:
-            config.auto_starts = 0
-            with open(PATH, 'r+') as f:
-                result = f.read().replace(script, '')
-                f.truncate(0)
-                f.seek(0, 0)
-                f.write(result)
-        self.button_list[1]['text'] = ('开机自启', '取消自启')[config.auto_starts]
-
     def change_skin(self):
         """切换皮肤"""
         config.skin = (config.skin + 1) % len(self.skins)
@@ -190,7 +139,7 @@ fi"""
         self.x_relative = e.x
         self.y_relative = e.y
 
-    def run_gui(self):
+    def run(self):
         """启动软件主界面"""
         self.root = tk.Tk()
         self.root.title('')
@@ -203,8 +152,7 @@ fi"""
         self.root.geometry('+{}+{}'.format(config.x, config.y))
         self.root["background"] = self.skins[config.skin][0]
         self.root.resizable(False, False)  # 固定窗口大小
-        self.root.wm_attributes('-topmost', 1)  # 置顶窗口
-        self.root.wm_attributes('-type', 'splash')
+        self.root.overrideredirect(True)  # 去掉标题栏
         self.root.bind('<Button-1>', self.click)
         self.root.bind('<B1-Motion>', self.move)
         # 标题栏及关闭按钮
@@ -220,11 +168,9 @@ fi"""
         self.label.grid(ipady=2, column=0, columnspan=2, row=1)
         self.label.bind('<Double-Button-1>', self.mini_mode)  # 添加双击事件
         self.label.bind('<Button-3>', self.quit)
-        # 按钮组
+        # 按钮组(方便以后加按钮)
         button_configs = [
-            (('开机自启', '取消自启')[config.auto_starts], self.set_auto_starts, 1, 2),
-            ('切换主题', self.change_skin, 0, 3),
-            ('软件说明', self.dialog, 1, 3),
+            ('切换主题', self.change_skin, 1, 2),
             ]
         for bc in button_configs:
             button = tk.Button(self.root, text=bc[0], relief=tk.FLAT, command=bc[1], highlightthickness=0.5, fg=self.skins[config.skin][3], bg=self.skins[config.skin][0], activebackground=self.skins[config.skin][2], activeforeground=self.skins[config.skin][3], highlightbackground=self.skins[config.skin][1])
@@ -252,13 +198,6 @@ fi"""
         self.run_service()
         self.root.mainloop()
 
-    def start(self):
-        """开始执行，根据命令行参数，决定是后台执行还是启动界面"""
-        if len(sys.argv) == 1:
-            self.run_gui()
-        else:
-            self.run_service()
-
 
 if __name__ == "__main__":
-    Remote().start()
+    Remote().run()
