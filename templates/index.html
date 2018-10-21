@@ -52,7 +52,7 @@
       top:10px;
       /* padding-left: 20px; */
     }
-    #hostname {
+    #match_code {
       width: 100px;
       position: fixed;
       right:5px;
@@ -143,7 +143,7 @@
       display: none;
     }
     .switch {
-      background-color: rgb(19, 206, 102);
+      background-color: gray;
       position: relative;
       width: 40px;
       height: 20px;
@@ -165,6 +165,10 @@
       width: 16px;
       height: 16px;
       background-color: #fff;
+    }
+    .is-chicked .switch:after {
+      left: 100%;
+      margin-left: -17px;
     }
     #set span {
       float: left;
@@ -189,7 +193,7 @@
     <!-- 顶部部件 -->
     <img src="../static/img/logo.png">
     <b><span id="name">Remoe</span></b>
-    <input id="hostname" class="input is-primary is-small" type="text" placeholder="匹配码">
+    <input id="match_code" class="input is-primary is-small" type="text" placeholder="匹配码">
     <i class="iconfont icon-yonghu"></i>
   </div>
 
@@ -221,11 +225,11 @@
     <div id="set">
       <div>
         <span class="switch"></span>
-        <span>音乐控件旋转</span>
+        <span>停止旋转音乐控件</span>
       </div>
       <div>
         <span class="switch"></span>
-        <span>显示所有消息</span>
+        <span>仅显示执行失败的消息</span>
       </div>
       <div>
         <span class="switch"></span>
@@ -238,31 +242,45 @@
   <div id="tabs-bar">
     <ul>
       <li>
-          <i class="iconfont icon-computer"></i>
-          <b>电脑控制</b>
+        <i class="iconfont icon-computer"></i>
+        <b>电脑控制</b>
       </li>
       <li>
-          <i class="iconfont icon-cc-plane"></i>
-          <b>内容传输</b>
+        <i class="iconfont icon-cc-plane"></i>
+        <b>内容传输</b>
       </li>
       <li>
-          <i class="iconfont icon-40"></i>
-          <b>设置相关</b>
+        <i class="iconfont icon-40"></i>
+        <b>设置相关</b>
       </li>
     </ul>
   </div>
 
   <script>
     // 给按钮绑定事件
-    document.getElementById('play-or-pause').addEventListener('click', ()=>(send_code('hot_key', {description: '播放/暂停'})))
-    document.getElementById('volume-plus').addEventListener('click', ()=>(send_code('hot_key', {description: '音量加'})))
-    document.getElementById('next').addEventListener('click', ()=>(send_code('hot_key', {description: '下一曲'})))
-    document.getElementById('volume-reduction').addEventListener('click', ()=>(send_code('hot_key', {description: '音量减'})))
-    document.getElementById('previous').addEventListener('click', ()=>(send_code('hot_key', {description: '上一曲'})))
-    // 给tabs绑定事件
+    document.getElementById('play-or-pause').addEventListener('click', () => (send_code('hot_key', {
+      description: '播放/暂停'
+    })))
+    document.getElementById('volume-plus').addEventListener('click', () => (send_code('hot_key', {
+      description: '音量加'
+    })))
+    document.getElementById('next').addEventListener('click', () => (send_code('hot_key', {
+      description: '下一曲'
+    })))
+    document.getElementById('volume-reduction').addEventListener('click', () => (send_code('hot_key', {
+      description: '音量减'
+    })))
+    document.getElementById('previous').addEventListener('click', () => (send_code('hot_key', {
+      description: '上一曲'
+    })))
+
+    // 给底部导航栏绑定事件
     document.querySelectorAll("ul li").forEach((item, index) => {
-        item.addEventListener("click", ()=>{toggle(index)})
+      item.addEventListener("click", () => {
+        toggle(index)
+      })
     });
+
     function toggle(index_outer) {
       document.querySelectorAll("#container > div").forEach((item, index_inner) => {
         if (index_inner === index_outer) {
@@ -280,30 +298,83 @@
       });
     }
 
-    // 获取主机名
-    var hostname
+    // 获取匹配码
+    var match_code
     window.location.search.substr(1).split("&").forEach((item, index, arr) => {
-      if (item.split("=")[0] == "hostname") {
-        hostname = item.split("=")[1]
-        document.getElementsByTagName("input")[0].value = hostname
+      if (item.split("=")[0] == "match") {
+        match_code = item.split("=")[1]
+        document.getElementsByTagName("input")[0].value = match_code
       }
     })
+
+    var front_end_config = 0b0000 // 默认设置所有switch关闭
+    send_code("configuration") // 获取前端配置
+
+    // 应用配置到switch
+    function refresh_switch() {
+      document.querySelectorAll(".switch").forEach((item, index) => {
+        if ((Math.pow(2, index) & front_end_config) === Math.pow(2, index)) {
+          item.style.backgroundColor = "rgb(19, 206, 102)";
+          document.querySelectorAll("#set div")[index].classList.add("is-chicked")
+        } else {
+          item.style.backgroundColor = "gray";
+          document.querySelectorAll("#set div")[index].classList.remove("is-chicked")
+        }
+      })
+    }
+
+    // 给switch绑定事件,修改配置
+    document.querySelectorAll(".switch").forEach((item, index_outer) => {
+      item.addEventListener("click", () => {
+        document.querySelectorAll(".switch").forEach((_, index_inner) => {
+          if (index_outer === index_inner) {
+            if ((Math.pow(2, index_inner) & front_end_config) === Math.pow(2, index_inner)) {
+              front_end_config -= Math.pow(2, index_inner)
+            } else {
+              front_end_config += Math.pow(2, index_inner)
+            }
+            refresh_switch()
+            send_code("configuration", {
+              "front_end_config": front_end_config
+            })
+          }
+        })
+      })
+    })
+
     // 缓存当前ip
     var ip = window.location.host.split(":")[0]
     window.localStorage.setItem("ip", ip)
+
     // 旋转特效
     var degree = 45
+    var interval
 
-    setInterval(()=>{
-      degree += 0.2;
-      document.getElementById('buttons-wrapper').style.transform = `rotate(${degree}deg)`;
-      document.querySelectorAll("#buttons-wrapper i").forEach((currentValue, index, arr)=>{
-        currentValue.style.transform = `rotate(-${degree}deg)`
-      })
-    },25)
+    function rotate() {
+      if ((Math.pow(2, 0) & front_end_config) !== Math.pow(2, 0)) {
+        interval = setInterval(() => {
+          degree += 0.1;
+          document.getElementById('buttons-wrapper').style.transform = `rotate(${degree}deg)`;
+          document.querySelectorAll("#buttons-wrapper i").forEach((currentValue, index, arr) => {
+            currentValue.style.transform = `rotate(-${degree}deg)`
+          })
+        }, 15)
+      } else {
+        clearInterval(interval)
+        console.log(interval)
+        degree = 45
+        document.getElementById('buttons-wrapper').style.transform = `rotate(${degree}deg)`;
+        document.querySelectorAll("#buttons-wrapper i").forEach((currentValue, index, arr) => {
+          currentValue.style.transform = `rotate(-${degree}deg)`
+        })
+      }
+    }
+    document.getElementsByClassName("switch")[0].addEventListener("click", rotate)
+    rotate()
 
-    var local_ip = null
     // 获取本机ip地址
+    var local_ip = null
+
     function getIP(onNewIP) { //  onNewIp - your listener function for new IPs
       var myPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection; //compatibility for firefox and chrome
       var pc = new myPeerConnection({
@@ -382,13 +453,15 @@
       return pormises
     }
     // 弹出消息框
-    function show_message (message) {
-      message = (message === 0) ? "命令执行成功" : message;
-      document.getElementById("message").innerHTML = message;
-      document.getElementById("message").style.visibility='visible';
-      setTimeout(()=>{
-        document.getElementById("message").style.visibility='hidden';
-      }, 2000)
+    function show_message(message) {
+      if (!((Math.pow(2, 1) & front_end_config) === Math.pow(2, 1) && (message === 0))) {
+        message = (message === 0) ? "命令执行成功" : message;
+        document.getElementById("message").innerHTML = message;
+        document.getElementById("message").style.visibility = 'visible';
+        setTimeout(() => {
+          document.getElementById("message").style.visibility = 'hidden';
+        }, 2000)
+      }
     }
     // 处理从服务器收到的json消息
     function handle_response(result) {
@@ -399,17 +472,20 @@
         textarea_el.value = result.text
       } else if (result.message != undefined) {
         show_message(result.message)
+      } else if (result.front_end_config) {
+        front_end_config = result.front_end_config
+        refresh_switch()
       }
     }
 
     // 发送请求
     function send_code(path, params) {
-      var hostname = document.getElementsByTagName("input")[0].value
+      var match_code = document.getElementsByTagName("input")[0].value
       if (params) {
-        params["hostname"] = hostname
+        params["match_code"] = match_code
       } else {
         params = {
-          "hostname": hostname
+          "match_code": match_code
         }
       }
       params = JSON.stringify(params)

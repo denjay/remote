@@ -1,13 +1,14 @@
 import json
-import time
 import os
 import subprocess
+import time
+
+from flask import (Flask, jsonify, render_template, request, send_file,
+                   send_from_directory, url_for)
+from flask_cors import CORS
 from pykeyboard import PyKeyboard
 
-from flask import Flask, request, render_template, send_from_directory, send_file, url_for, jsonify
-from flask_cors import CORS
-
-from toolbox import config, validate_hostname, close_screen
+from toolbox import close_screen, config, validate_match_code
 
 
 def run_flask(label, root):
@@ -20,7 +21,7 @@ def run_flask(label, root):
         return render_template("index.html")
 
     @app.route('/get_clipboard_content', methods=["post", "get"])
-    @validate_hostname
+    @validate_match_code
     def get_clipboard_content():
         try:
             text = root.clipboard_get()
@@ -39,7 +40,7 @@ def run_flask(label, root):
             return send_file(text, mimetype='application/octet-stream', as_attachment=True, attachment_filename=filename)
 
     @app.route('/set_clipboard_content', methods=["post"])
-    @validate_hostname
+    @validate_match_code
     def set_clipboard_content():
         content = json.loads(request.data)["content"]
         root.clipboard_append(content)
@@ -51,7 +52,7 @@ def run_flask(label, root):
         return send_from_directory(os.path.join(app.root_path, 'assets'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
     @app.route("/exec", methods=["post"])
-    @validate_hostname
+    @validate_match_code
     def exec():
         '''直接执行收到的代码'''
         data = json.loads(request.get_data())
@@ -62,7 +63,7 @@ def run_flask(label, root):
         return jsonify({"message": result})
 
     @app.route("/hot_key", methods=["post"])
-    @validate_hostname
+    @validate_match_code
     @close_screen
     def hot_key():
         '''快捷键命令'''
@@ -97,6 +98,17 @@ def run_flask(label, root):
             k.tap_key(keys_comb)
         label.config(text=description)
         return jsonify({"message": 0})
+
+    @app.route("/configuration", methods=["post"])
+    @validate_match_code
+    def configuration():
+        if "front_end_config" in json.loads(request.data):
+            config.front_end_config = json.loads(
+                request.data)["front_end_config"]
+            config.save_config()
+            return jsonify({"message": 0})
+        else:
+            return jsonify({"front_end_config": config.front_end_config})
 
     label.config(text='成功启动服务')
     try:
