@@ -307,7 +307,7 @@
       }
     })
 
-    var front_end_config = 0b0000 // 默认设置所有switch关闭
+    var front_end_config
     send_code("configuration") // 获取前端配置
 
     // 应用配置到switch
@@ -329,13 +329,12 @@
         document.querySelectorAll(".switch").forEach((_, index_inner) => {
           if (index_outer === index_inner) {
             if ((Math.pow(2, index_inner) & front_end_config) === Math.pow(2, index_inner)) {
-              front_end_config -= Math.pow(2, index_inner)
+              var new_front_end_config = front_end_config - Math.pow(2, index_inner)
             } else {
-              front_end_config += Math.pow(2, index_inner)
+              var new_front_end_config = front_end_config + Math.pow(2, index_inner)
             }
-            refresh_switch()
             send_code("configuration", {
-              "front_end_config": front_end_config
+              "front_end_config": new_front_end_config
             })
           }
         })
@@ -351,7 +350,7 @@
     var interval
 
     function rotate() {
-      if ((Math.pow(2, 0) & front_end_config) !== Math.pow(2, 0)) {
+      if ((0b0001 & front_end_config) !== 0b0001) {
         interval = setInterval(() => {
           degree += 0.1;
           document.getElementById('buttons-wrapper').style.transform = `rotate(${degree}deg)`;
@@ -361,7 +360,6 @@
         }, 15)
       } else {
         clearInterval(interval)
-        console.log(interval)
         degree = 45
         document.getElementById('buttons-wrapper').style.transform = `rotate(${degree}deg)`;
         document.querySelectorAll("#buttons-wrapper i").forEach((currentValue, index, arr) => {
@@ -369,8 +367,6 @@
         })
       }
     }
-    document.getElementsByClassName("switch")[0].addEventListener("click", rotate)
-    rotate()
 
     // 获取本机ip地址
     var local_ip = null
@@ -454,7 +450,7 @@
     }
     // 弹出消息框
     function show_message(message) {
-      if (!((Math.pow(2, 1) & front_end_config) === Math.pow(2, 1) && (message === 0))) {
+      if (!((0b0010 & front_end_config) === 0b0010 && (message === 0))) {
         message = (message === 0) ? "命令执行成功" : message;
         document.getElementById("message").innerHTML = message;
         document.getElementById("message").style.visibility = 'visible';
@@ -472,9 +468,14 @@
         textarea_el.value = result.text
       } else if (result.message != undefined) {
         show_message(result.message)
-      } else if (result.front_end_config) {
+      } else if (result.front_end_config != undefined) {
+        var old_front_end_config = front_end_config
         front_end_config = result.front_end_config
         refresh_switch()
+        // 避免重复启动定时器，否则定时器无法清除
+        if (old_front_end_config === undefined || ((0b0001 & old_front_end_config) !== (0b0001 & front_end_config))) {
+          rotate()
+        }
       }
     }
 

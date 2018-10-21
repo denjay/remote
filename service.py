@@ -103,11 +103,12 @@ def run_flask(label, root):
     @validate_match_code
     def configuration():
         if "front_end_config" in json.loads(request.data):
-            config.front_end_config = json.loads(
-                request.data)["front_end_config"]
+            config.front_end_config = json.loads(request.data)["front_end_config"]
             config.save_config()
-            return jsonify({"message": 0})
+            print(json.loads(request.data))
+            return jsonify(json.loads(request.data))
         else:
+            print(config.front_end_config)
             return jsonify({"front_end_config": config.front_end_config})
 
     label.config(text='成功启动服务')
