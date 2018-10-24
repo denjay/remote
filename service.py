@@ -9,6 +9,7 @@ from flask_cors import CORS
 from pykeyboard import PyKeyboard
 
 from toolbox import close_screen, config, validate_match_code
+import tkinter
 
 
 def run_flask(label, root):
@@ -25,7 +26,7 @@ def run_flask(label, root):
     def get_clipboard_content():
         try:
             text = root.clipboard_get()
-        except:
+        except tkinter.TclError:
             return jsonify({"message": "剪贴板无内容"})
         # root.clipboard_clear()  # 清除剪贴板内容
         if request.method == "POST":
@@ -87,7 +88,7 @@ def run_flask(label, root):
         keys_comb = key_map[description]
         if isinstance(keys_comb, tuple):
             for item in keys_comb:
-                time.sleep(0.1)
+                time.sleep(0.5)
                 if isinstance(item, list):
                     k.press_keys(item)
                 else:

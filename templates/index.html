@@ -5,7 +5,6 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="shortcut icon" href="/favicon.ico">
-  <link rel="stylesheet" href="../static/css/bulma.min.css" />
   <link rel="stylesheet" href="../static/css/iconfont.css" />
   <style>
     html {
@@ -35,6 +34,9 @@
     #tabs-bar ul {
       background-color: rgba(0, 209, 178, 0.486);
       height: 45px;
+      margin: 0px;
+      padding: 0px;
+      list-style:none;
       line-height: 40px;
     }
     #tabs-bar ul li:first-child {
@@ -53,7 +55,10 @@
       /* padding-left: 20px; */
     }
     #match_code {
+      border-radius: 4px;
       width: 100px;
+      height: 22px;
+      border: 1px solid #00d1b2;
       position: fixed;
       right:5px;
       top:10px;
@@ -69,9 +74,8 @@
       transform: rotate(45deg);
       transform-origin: center center;
       box-shadow: 0px 0px 20px #6d1313ec;
-      /* border:2px solid; */
-      /* padding: 1px; */
-      margin: 50px auto;
+      border:2px solid;
+      margin: 25px auto;
     }
     #container {
       margin-top: 100px;
@@ -85,8 +89,8 @@
         z-index:10000;
         border-radius: 50%;
         background-color: rgba(29, 10, 10, 0.945);
-        left:25%;
-        top:25%;
+        left:calc(25% - 3px);
+        top:calc(25% - 3px);
         border:3px solid rgba(255, 255, 255, 0.767);
     }
     #volume-plus {
@@ -112,7 +116,7 @@
     #buttons-wrapper i {
       position:absolute;
       left:calc(50% - 20px);
-      top:calc(50% - 32px);
+      top:calc(50% - 22px);
       z-index: 10000;
       transform: rotate(-45deg);
     }
@@ -128,14 +132,15 @@
       position: fixed;
       left:40px;
       right:40px;
-      top:50px;
+      top:40px;
     }
     .icon-yonghu {
       position: fixed;
       right:85px;
-      top:10px;
+      top:13px;
     }
     textarea {
+      border-color: #00d1b2;
       background-color: #0000;
       width: 80%;
     }
@@ -183,6 +188,48 @@
       height: 40px;
       border-bottom: 1px  rgba(19, 206, 103, 0.452) solid;
     }
+    #button-shutdown {
+      background-color: rgba(231, 110, 110, 0.836);
+      height: 100px;
+      width: 100px;
+      border-radius: 50px;
+      border: 1px solid rgb(221, 67, 67);
+      font-size: 20px;
+      color: white;
+      font-weight: bold;
+    }
+    #button-sleep {
+      background-color: rgba(231, 166, 69, 0.87);
+      margin-left: 20px;
+      margin-right: 20px;
+      height: 80px;
+      width: 80px;
+      border-radius: 50px;
+      border: 1px solid rgb(207, 135, 27);
+      font-size: 20px;
+      color: white;
+      font-weight: bold;
+    }
+    #button-close-screen {
+      background-color: rgba(94, 182, 64, 0.877);
+      height: 100px;
+      width: 100px;
+      border-radius: 50px;
+      border: 1px solid rgb(84, 218, 39);
+      font-size: 20px;
+      color: white;
+      font-weight: bold;
+    }
+    .button {
+      width: 135px;
+      font-size: 16px;
+      line-height: 35px;
+      border-radius: 4px;
+      margin: 5px;
+      background-color: #0BC4AE;
+      color: white;
+      border:none;
+    }
   </style>
 </head>
 
@@ -193,7 +240,7 @@
     <!-- 顶部部件 -->
     <img src="../static/img/logo.png">
     <b><span id="name">Remoe</span></b>
-    <input id="match_code" class="input is-primary is-small" type="text" placeholder="匹配码">
+    <input id="match_code" class="input" type="text" placeholder="匹配码">
     <i class="iconfont icon-yonghu"></i>
   </div>
 
@@ -208,17 +255,17 @@
         <div id="previous"><i class="iconfont icon-back-m"></i></div>
       </div>
       <!-- 电源控制 -->
-      <button class="button is-primary" onclick="send_code('exec', {description: '关机', code: 'poweroff'})">关机</button>
-      <button class="button is-primary" onclick="send_code('hot_key', {description: '待机'})">待机</button>
-      <button class="button is-primary" onclick="send_code('exec', {description: '息屏', code: 'xset dpms force off'})">息屏</button>
+      <button id="button-shutdown" onclick="send_code('exec', {description: '关机', code: 'poweroff'})">关机</button>
+      <button id="button-sleep" onclick="send_code('hot_key', {description: '待机'})">待机</button>
+      <button id="button-close-screen" onclick="send_code('exec', {description: '息屏', code: 'xset dpms force off'})">息屏</button>
     </div>
 
     <!-- 传输界面 -->
     <div id="transport">
       <textarea rows="5" placeholder="输入要传送的文字"></textarea>
       <br>
-      <button class="button is-primary" onclick="set_clipboard_content()">传文字到剪贴板</button>
-      <button class="button is-primary" onclick="send_code('get_clipboard_content')">获取剪贴板内容</button>
+      <button class="button" onclick="set_clipboard_content()">传文字到剪贴板</button>
+      <button class="button" onclick="send_code('get_clipboard_content')">获取剪贴板内容</button>
     </div>
 
     <!-- 设置界面 -->
