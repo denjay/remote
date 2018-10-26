@@ -147,7 +147,8 @@ class Remote(object):
         self.root.geometry('+{}+{}'.format(config.x, config.y))
         self.root["background"] = self.skins[config.skin][0]
         self.root.resizable(False, False)  # 固定窗口大小
-        self.root.overrideredirect(True)  # 去掉标题栏
+        self.root.wm_attributes('-topmost', 1)  # 置顶窗口
+        self.root.wm_attributes('-type', 'splash')  # 去掉标题栏
         self.root.bind('<Button-1>', self.click)
         self.root.bind('<B1-Motion>', self.move)
         # 标题栏及关闭按钮

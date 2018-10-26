@@ -66,6 +66,9 @@
       background-color: #0000;
     }
     #buttons-wrapper {
+      background-image: url(../static/img/blackGlue.png);
+      background-position: center center;
+      background-size: 101%;
       position: relative;
       padding-top: 90%;
       width: 90%;
@@ -88,28 +91,22 @@
     #play-or-pause {
         z-index:10000;
         border-radius: 50%;
-        background-color: rgba(29, 10, 10, 0.945);
-        left:calc(25% - 3px);
-        top:calc(25% - 3px);
-        border:3px solid rgba(255, 255, 255, 0.767);
+        left: 25%;
+        top: 25%;
     }
     #volume-plus {
-        background-color: green;
         left:0px;
         top:0px;
     }
     #next {
-        background-color: yellow;
         right:0px;
         top:0px;
     }
     #volume-reduction {
-        background-color: gray;
         right:0px;
         bottom:0px;
     }
     #previous {
-        background-color: pink;
         left:0px;
         bottom:0px;
     }
@@ -190,8 +187,10 @@
     }
     #button-shutdown {
       background-color: rgba(231, 110, 110, 0.836);
-      height: 100px;
-      width: 100px;
+      height: 80px;
+      width: 80px;
+      margin-left: 20px;
+      margin-right: 20px;
       border-radius: 50px;
       border: 1px solid rgb(221, 67, 67);
       font-size: 20px;
@@ -200,10 +199,8 @@
     }
     #button-sleep {
       background-color: rgba(231, 166, 69, 0.87);
-      margin-left: 20px;
-      margin-right: 20px;
-      height: 80px;
-      width: 80px;
+      height: 100px;
+      width: 100px;
       border-radius: 50px;
       border: 1px solid rgb(207, 135, 27);
       font-size: 20px;
@@ -255,8 +252,8 @@
         <div id="previous"><i class="iconfont icon-back-m"></i></div>
       </div>
       <!-- 电源控制 -->
-      <button id="button-shutdown" onclick="send_code('exec', {description: '关机', code: 'poweroff'})">关机</button>
       <button id="button-sleep" onclick="send_code('hot_key', {description: '待机'})">待机</button>
+      <button id="button-shutdown" onclick="send_code('exec', {description: '关机', code: 'poweroff'})">关机</button>
       <button id="button-close-screen" onclick="send_code('exec', {description: '息屏', code: 'xset dpms force off'})">息屏</button>
     </div>
 
