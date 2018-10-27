@@ -455,7 +455,7 @@
     // 群发请求,nsid是网络号
     function mass(path, nsid_or_ip, params) {
       if ("ip" in nsid_or_ip) {
-        var time = 2000;
+        var time = 3000;
         var nsid = nsid_or_ip.ip.split(".").slice(0, 3).join(".") + ".";
         var start = Number(nsid_or_ip.ip.split(".")[3]);
         var end = start + 1;

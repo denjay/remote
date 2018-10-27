@@ -59,7 +59,7 @@ Terminal=false
     def save_config(self):
         """保存配置到配置文件"""
         dic = {
-            'front_end_config': self.front_end_config,
+            'front_end_config': self.front_end_config if self.front_end_config else 0,
             'match_code': self.match_code,
             'close_screen': self.close_screen,
             'skin': self.skin,
