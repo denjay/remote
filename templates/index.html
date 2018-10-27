@@ -63,7 +63,8 @@
       right:5px;
       top:10px;
       text-align: center;
-      background-color: #0000;
+      background-color: transparent;
+      color: darkslategray;
     }
     #buttons-wrapper {
       background-image: url(../static/img/blackGlue.png);
@@ -138,7 +139,7 @@
     }
     textarea {
       border-color: #00d1b2;
-      background-color: #0000;
+      background-color: transparent;
       width: 80%;
     }
     #transport, #set {
@@ -176,6 +177,7 @@
       float: left;
       margin-right: 20px;
       font-size: 20px;
+      color: darkslategray;
     }
     #set div {
       margin: 20px auto;
@@ -186,16 +188,18 @@
       border-bottom: 1px  rgba(19, 206, 103, 0.452) solid;
     }
     #button-shutdown {
-      background-color: rgba(231, 110, 110, 0.836);
+      background-color: rgba(231, 110, 110, 0.87);
       height: 80px;
       width: 80px;
-      margin-left: 20px;
-      margin-right: 20px;
+      margin-left: 10px;
+      margin-right: 10px;
       border-radius: 50px;
-      border: 1px solid rgb(221, 67, 67);
+      border: 1px solid rgb(201, 104, 104);
       font-size: 20px;
       color: white;
       font-weight: bold;
+      box-shadow: 0px 0px 10px rgb(201, 104, 104);
+      outline: none;
     }
     #button-sleep {
       background-color: rgba(231, 166, 69, 0.87);
@@ -206,9 +210,11 @@
       font-size: 20px;
       color: white;
       font-weight: bold;
+      box-shadow: 0px 0px 10px rgb(207, 135, 27);
+      outline: none;
     }
     #button-close-screen {
-      background-color: rgba(94, 182, 64, 0.877);
+      background-color: rgba(94, 182, 64, 0.87);
       height: 100px;
       width: 100px;
       border-radius: 50px;
@@ -216,6 +222,8 @@
       font-size: 20px;
       color: white;
       font-weight: bold;
+      box-shadow: 0px 0px 10px rgb(84, 218, 39);
+      outline: none;
     }
     .button {
       width: 135px;
@@ -396,12 +404,12 @@
     function rotate() {
       if ((0b0001 & front_end_config) !== 0b0001) {
         interval = setInterval(() => {
-          degree += 0.1;
+          degree += 0.2;
           document.getElementById('buttons-wrapper').style.transform = `rotate(${degree}deg)`;
           document.querySelectorAll("#buttons-wrapper i").forEach((currentValue, index, arr) => {
             currentValue.style.transform = `rotate(-${degree}deg)`
           })
-        }, 15)
+        }, 20)
       } else {
         clearInterval(interval)
         degree = 45

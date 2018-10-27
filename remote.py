@@ -47,8 +47,9 @@ class Remote(object):
             "http://{}:8765/?match={}".format(config.ip, config.match_code))
         img = qr.make_image(
             fill_color=self.skins[config.skin][4], back_color=self.skins[config.skin][5])
-        img.save('qrcode.png')
-        self.qrcode = tk.PhotoImage(file="qrcode.png")
+        path = sys.path[0] + '/qrcode.png'
+        img.save(path)
+        self.qrcode = tk.PhotoImage(file=path)
         self.img_label["image"] = self.qrcode
 
     def validate(self, *args):

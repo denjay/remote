@@ -7,4 +7,4 @@ sudo pip3 install PyUserInput
 
 没用到：
 pip3 install setproctitle
-setproctitle.setproctitle("要修改为的进程名")
+setproctitle.setproctitle("simple-remote-control")

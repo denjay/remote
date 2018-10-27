@@ -65,7 +65,7 @@ Terminal=false
             'skin': self.skin,
             'mode': self.mode,
             'x': self.x,
-            'y': self.y,
+            'y': self.y if self.mode == 1 else self.y - 20,
         }
         with open(sys.path[0] + '/config.pkl', 'wb') as config:
             pickle.dump(dic, config)
