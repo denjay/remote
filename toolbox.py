@@ -31,7 +31,7 @@ class Config(object):
             self.x = dic.get('x')
             self.y = dic.get('y')
         else:
-            self.match_code = "1234"  # 匹配码
+            self.match_code = "deepin"  # 匹配码
             self.front_end_config = 0b0010  # 前端设置
             self.close_screen = 0  # 0表示执行命令后不自动息屏
             self.skin = 0

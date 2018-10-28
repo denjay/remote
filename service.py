@@ -31,7 +31,7 @@ def run_flask(label, root):
         # root.clipboard_clear()  # 清除剪贴板内容
         if request.method == "POST":
             if os.path.isfile(text):
-                return jsonify({"file_url": url_for("get_clipboard_content", hostname=config.hostname)})
+                return jsonify({"file_url": url_for("get_clipboard_content", match_code=config.match_code)})
             else:
                 label.config(text="获取剪贴板文字")
                 return jsonify({"text": text})
@@ -82,7 +82,7 @@ def run_flask(label, root):
         if description not in key_map:
             return jsonify({"message": "找不到相应的快捷键"})
         # 判断是否打开了网易云音乐
-        if description in ["播放/暂停", "上一曲", "下一曲", "音量加", "音量减"] and subprocess.run("pgrep netease-cloud-m", shell=True).returncode == 1:
+        if description in ["播放/暂停", "上一曲", "下一曲", "音量加", "音量减"] and len(subprocess.run("pgrep -f netease-cloud-m", shell=True, stdout=subprocess.PIPE).stdout.split(b"\n")) <= 2:
             subprocess.call("netease-cloud-music &", shell=True)
             time.sleep(2)
         keys_comb = key_map[description]
@@ -106,10 +106,8 @@ def run_flask(label, root):
         if "front_end_config" in json.loads(request.data):
             config.front_end_config = json.loads(request.data)["front_end_config"]
             config.save_config()
-            print(json.loads(request.data))
             return jsonify(json.loads(request.data))
         else:
-            print(config.front_end_config)
             return jsonify({"front_end_config": config.front_end_config})
 
     label.config(text='成功启动服务')

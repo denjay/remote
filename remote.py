@@ -4,12 +4,13 @@
 """
 
 import re
+import subprocess
 import sys
 import threading
 import tkinter as tk
 
 import qrcode
-
+import setproctitle
 from service import run_flask
 from toolbox import config
 
@@ -136,7 +137,11 @@ class Remote(object):
         self.y_relative = e.y
 
     def run(self):
-        """启动软件主界面"""
+        # 只允许运行一个软件
+        if len(subprocess.run("pgrep -f simple-remote-control", shell=True, stdout=subprocess.PIPE).stdout.split(b"\n")) > 2:
+            sys.exit()
+        setproctitle.setproctitle("simple-remote-control")
+        # 启动软件主界面
         self.root = tk.Tk()
         self.root.title('')
         img = tk.PhotoImage(file=sys.path[0] + '/assets/ICON.png')
