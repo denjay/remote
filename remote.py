@@ -1,6 +1,10 @@
 #!/usr/bin/python3
 
 """
+软件名：remote
+简介：linux平台轻量级的远程控制软件
+主要功能：网易云音乐播放控制、关机、待机、息屏、文字的双向传输、传输文件到手机
+项目地址：https://github.com/denjay/remote
 """
 
 import re
@@ -20,11 +24,11 @@ class Remote(object):
         """给软件设置初始参数"""
         self.x_relative = 0  # 相对坐标x
         self.y_relative = 0  # 相对坐标y
-        # 颜色分别是：主界面，按钮边框，消息提示框(按钮hover色)，文字，二维码前景色，二维码背景色
-        self.skins = [('#1F2326', 'black', '#1F2336', '#00ffff', '#1F2326',  '#00ffff'),
-                      ('#FFFFFF', '#90ee90', '#D0D0D0',
-                       '#00ced1', '#00ced1', '#FFFFFF')
-                      ]
+        # 颜色分别是：主界面，按钮和输入框边框，消息提示框(按钮hover色)，文字，二维码前景色，二维码背景色
+        self.skins = [
+            ('#1F2326', '#1F2346', '#1F2346', '#00ffff', '#1F2326', '#00ffff'),
+            ('#FFFFFF', 'lightblue', 'lightblue', '#00ced1', '#00ced1', '#FFFFFF')
+        ]
         self.button_list = []  # 按钮列表
         self.entry = None  # 文本框对象
         self.entry_content = ""
@@ -87,6 +91,8 @@ class Remote(object):
         self.label["bg"] = self.skins[config.skin][2]
         self.entry["fg"] = self.skins[config.skin][3]
         self.entry["bg"] = self.skins[config.skin][0]
+        self.entry["highlightbackground"] = self.skins[config.skin][1]
+        self.entry["highlightcolor"] = self.skins[config.skin][1]
         self.img_label["fg"] = self.skins[config.skin][3]
         self.img_label["bg"] = self.skins[config.skin][5]
         self.close_button_label["fg"] = self.skins[config.skin][3]
@@ -120,7 +126,7 @@ class Remote(object):
                 new_x = 0
             if new_x > self.root.winfo_screenwidth() - self.root.winfo_width() - 10:
                 new_x = self.root.winfo_screenwidth() - self.root.winfo_width()
-            # 自动隐藏
+            # 自动隐藏（失效）
             # if new_x > self.root.winfo_screenwidth() - self.root.winfo_width() - 10:
             #     new_x = self.root.winfo_screenwidth() - 4
             if new_y < 10:
@@ -155,6 +161,7 @@ class Remote(object):
         self.root.resizable(False, False)  # 固定窗口大小
         self.root.wm_attributes('-topmost', 1)  # 置顶窗口
         self.root.wm_attributes('-type', 'splash')  # 去掉标题栏
+        # self.root.attributes('-fullscreen', True)  # 另一种去标题栏方式
         self.root.bind('<Button-1>', self.click)
         self.root.bind('<B1-Motion>', self.move)
         # 标题栏及关闭按钮
@@ -187,7 +194,7 @@ class Remote(object):
         # 输入框
         self.entry_content = tk.StringVar()
         self.entry = tk.Entry(self.root, fg=self.skins[config.skin][3], bg=self.skins[config.skin][0], width=10, textvariable=self.entry_content, justify=tk.CENTER,
-                              highlightthickness=0.5, highlightbackground='#4F4F4F', highlightcolor='#4F4F4F', insertbackground=self.skins[config.skin][3], relief=tk.FLAT)
+                              highlightthickness=0.5, highlightbackground=self.skins[config.skin][1], highlightcolor=self.skins[config.skin][1], insertbackground=self.skins[config.skin][3], relief=tk.FLAT)
         self.entry_content.set(config.match_code)
         self.entry_content.trace_add("write", self.validate)
         self.entry.grid(column=0, row=2, padx=3, pady=3,

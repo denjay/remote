@@ -10,19 +10,19 @@
 .iconfont {
   font-family:"iconfont" !important;
   font-size:18px;
-  color: #00D1B2;
+  color: white;
   font-style:normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-computer:before { content: "\e60d"; color: white }
+.icon-computer:before { content: "\e60d"; }
 
 .icon-volumehigh:before { content: "\e6a6"; font-size:40px; }
 
-.icon-cc-plane:before { content: "\e6cb"; color: white }
+.icon-cc-plane:before { content: "\e6cb"; }
 
-.icon-40:before { content: "\e6e9"; color: white }
+.icon-40:before { content: "\e6e9"; }
 
 .icon-back-m:before { content: "\e60f"; font-size:40px; }
 
@@ -30,7 +30,7 @@
 
 .icon-edit:before { content: "\e607"; }
 
-.icon-yonghu:before { content: "\e64e"; }
+.icon-yonghu:before { content: "\e64e"; color: #00D1B2; }
 
 .icon-volume-low:before { content: "\e64d"; font-size:40px; }
 

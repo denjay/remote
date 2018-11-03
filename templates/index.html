@@ -308,6 +308,12 @@
   </div>
 
   <script>
+    // 缓存当前ip
+    var ip = window.location.host.split(":")[0]
+    if (ip) {
+      window.localStorage.setItem("ip", ip)
+    }
+
     // 给按钮绑定事件
     document.getElementById('play-or-pause').addEventListener('click', () => (send_code('hot_key', {
       description: '播放/暂停'
@@ -391,10 +397,6 @@
         })
       })
     })
-
-    // 缓存当前ip
-    var ip = window.location.host.split(":")[0]
-    window.localStorage.setItem("ip", ip)
 
     // 旋转特效
     var degree = 45

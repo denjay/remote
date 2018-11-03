@@ -103,8 +103,10 @@ def run_flask(label, root):
     @app.route("/configuration", methods=["post"])
     @validate_match_code
     def configuration():
+        '''修改前端配置'''
         if "front_end_config" in json.loads(request.data):
-            config.front_end_config = json.loads(request.data)["front_end_config"]
+            config.front_end_config = json.loads(
+                request.data)["front_end_config"]
             config.save_config()
             return jsonify(json.loads(request.data))
         else:
@@ -113,5 +115,5 @@ def run_flask(label, root):
     label.config(text='成功启动服务')
     try:
         app.run(port=8765, host="0.0.0.0")
-    except OSError as e:
+    except OSError:
         label.config(text='端口被占用')

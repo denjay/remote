@@ -10,6 +10,7 @@ from flask import jsonify, request
 
 
 def ip():
+    """获取本机ip"""
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         s.connect(('8.8.8.8', 80))
         return s.getsockname()[0]
@@ -38,6 +39,7 @@ class Config(object):
             self.mode = 1  # 0表示mini mode,1表示normal mode
             self.x = 0  # 窗口x坐标
             self.y = 0  # 窗口y坐标
+            self.save_config()  # 生成配置文件
             # 启动器图标所需内容,下面StartupWMClass作用是让任务栏只有一个图标，即使在任务栏创建了图标
             content = """[Desktop Entry]
 Encoding=UTF-8
@@ -55,6 +57,7 @@ Terminal=false
                 '/.local/share/applications/Remote.desktop'
             with open(path, 'w+') as f:
                 f.write(content)
+            sys.exit()  # 安装完后退出，不运行软件
 
     def save_config(self):
         """保存配置到配置文件"""
@@ -75,6 +78,7 @@ config = Config()
 
 
 def validate_match_code(func):
+    """验证匹配码"""
     @wraps(func)
     def wrapper(*args, **kw):
         if request.method == "POST":
@@ -89,6 +93,7 @@ def validate_match_code(func):
 
 
 def close_screen(func):
+    """执行命令后自动息屏"""
     @wraps(func)
     def wrapper(*args, **kw):
         result = func(*args, **kw)
