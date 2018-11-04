@@ -80,6 +80,10 @@ document.querySelectorAll(".switch").forEach((item, index_outer) => {
                 } else {
                     var new_front_end_config = front_end_config + Math.pow(2, index_inner)
                 }
+                if (! new_front_end_config) {
+                    console.log(new_front_end_config)
+                    new_front_end_config = 0
+                }
                 send_code("configuration", {
                     "front_end_config": new_front_end_config
                 })
