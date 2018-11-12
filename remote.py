@@ -33,6 +33,7 @@ class Remote(object):
         self.entry = None  # 文本框对象
         self.entry_content = ""
         self.root = None
+        self.frame = None  # 用于放置窗口按钮
         self.label = None
         self.img_label = None
         self.close_button_label = None
@@ -97,6 +98,8 @@ class Remote(object):
         self.img_label["bg"] = self.skins[config.skin][5]
         self.close_button_label["fg"] = self.skins[config.skin][3]
         self.close_button_label["bg"] = self.skins[config.skin][0]
+        self.minimize_button_label["fg"] = self.skins[config.skin][3]
+        self.minimize_button_label["bg"] = self.skins[config.skin][0]
         for bt in self.button_list:
             bt["fg"] = self.skins[config.skin][3]
             bt["bg"] = self.skins[config.skin][0]
@@ -110,12 +113,22 @@ class Remote(object):
         config.save_config()
         sys.exit()
 
+    def minimize(self, e):
+        self.root.state('iconic')
+
     def change_close_button_img(self, e):
         '''标题栏关闭按钮变化'''
         if e.type._name_ == "Enter":
             self.close_button_label["image"] = self.img_close_hover
         elif e.type._name_ == "Leave":
             self.close_button_label["image"] = self.img_close
+
+    def change_minimize_button_img(self, e):
+        '''标题栏最小化按钮变化'''
+        if e.type._name_ == "Enter":
+            self.minimize_button_label["image"] = self.img_minimize_hover
+        elif e.type._name_ == "Leave":
+            self.minimize_button_label["image"] = self.img_minimize
 
     def move(self, e):
         '''移动窗口'''
@@ -160,21 +173,34 @@ class Remote(object):
         self.root["background"] = self.skins[config.skin][0]
         self.root.resizable(False, False)  # 固定窗口大小
         self.root.wm_attributes('-topmost', 1)  # 置顶窗口
-        self.root.wm_attributes('-type', 'splash')  # 去掉标题栏
-        # self.root.attributes('-fullscreen', True)  # 另一种去标题栏方式
+        # self.root.wm_attributes('-type', 'splash')  # 去掉标题栏
+        self.root.attributes('-fullscreen', True)  # 另一种去标题栏方式
         self.root.bind('<Button-1>', self.click)
         self.root.bind('<B1-Motion>', self.move)
         # 标题栏及关闭按钮
+        self.frame = tk.Frame(self.root)
+        self.frame.grid(row=0, column=1, sticky=tk.E)
+
         self.img_close = tk.PhotoImage(
             file=sys.path[0] + "/assets/titlebutton-close.png")
         self.img_close_hover = tk.PhotoImage(
             file=sys.path[0] + "/assets/titlebutton-close-hover.png")
-        self.close_button_label = tk.Label(self.root, image=self.img_close, width=20,
-                                           height=20, fg=self.skins[config.skin][3], bg=self.skins[config.skin][0])
-        self.close_button_label.grid(column=1, ipadx=2, sticky=tk.E)
-        self.close_button_label.bind('<ButtonPress-1>', self.quit)  # 添加单击事件
+        self.img_minimize = tk.PhotoImage(
+            file=sys.path[0] + "/assets/titlebutton-minimize.png")
+        self.img_minimize_hover = tk.PhotoImage(
+            file=sys.path[0] + "/assets/titlebutton-minimize-hover.png")
+
+        self.close_button_label = tk.Label(self.frame, image=self.img_close, width=20, height=20, fg=self.skins[config.skin][3], bg=self.skins[config.skin][0])
+        self.close_button_label.grid(row=0, column=1)
+        self.minimize_button_label = tk.Label(self.frame, image=self.img_minimize, width=20, height=20, fg=self.skins[config.skin][3], bg=self.skins[config.skin][0])
+        self.minimize_button_label.grid(row=0, column=0)
+        # 添加单击事件
+        self.close_button_label.bind('<ButtonPress-1>', self.quit)  
         self.close_button_label.bind('<Enter>', self.change_close_button_img)
         self.close_button_label.bind('<Leave>', self.change_close_button_img)
+        self.minimize_button_label.bind('<ButtonPress-1>', self.minimize)  
+        self.minimize_button_label.bind('<Enter>', self.change_minimize_button_img)
+        self.minimize_button_label.bind('<Leave>', self.change_minimize_button_img)
         # 消息框
         self.label = tk.Label(self.root, text='消息框', bg=self.skins[config.skin][2], fg=self.skins[config.skin][3], font=(
             "Arial, 12"), relief=tk.FLAT, width=19)
