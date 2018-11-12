@@ -28,7 +28,6 @@ def run_flask(label, root):
             text = root.clipboard_get()
         except tkinter.TclError:
             return jsonify({"message": "剪贴板无内容"})
-        # root.clipboard_clear()  # 清除剪贴板内容
         if request.method == "POST":
             if os.path.isfile(text):
                 return jsonify({"file_url": url_for("get_clipboard_content", match_code=config.match_code)})
@@ -44,6 +43,7 @@ def run_flask(label, root):
     @validate_match_code
     def set_clipboard_content():
         content = json.loads(request.data)["content"]
+        root.clipboard_clear()  # 清除剪贴板内容
         root.clipboard_append(content)
         label.config(text="剪贴板收到文字")
         return jsonify({"message": "已经将文字传到电脑剪贴板"})
