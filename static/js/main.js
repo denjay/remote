@@ -98,19 +98,14 @@ var interval
 
 function rotate() {
     if ((0b0001 & front_end_config) !== 0b0001) {
-        interval = setInterval(() => {
-            degree += 0.2;
-            document.getElementById('buttons-wrapper').style.transform = `rotate(${degree}deg)`;
-            document.querySelectorAll("#buttons-wrapper i").forEach((currentValue, index, arr) => {
-                currentValue.style.transform = `rotate(-${degree}deg)`
-            })
-        }, 20)
+        document.getElementById('buttons-wrapper').classList.add("rotate-wrapper")
+        document.querySelectorAll("#buttons-wrapper i").forEach((item, index, arr) => {
+            item.classList.add("rotate-icon")
+        })
     } else {
-        clearInterval(interval)
-        degree = 45
-        document.getElementById('buttons-wrapper').style.transform = `rotate(${degree}deg)`;
-        document.querySelectorAll("#buttons-wrapper i").forEach((currentValue, index, arr) => {
-            currentValue.style.transform = `rotate(-${degree}deg)`
+        document.getElementById('buttons-wrapper').classList.remove("rotate-wrapper")
+        document.querySelectorAll("#buttons-wrapper i").forEach((item, index, arr) => {
+            item.classList.remove("rotate-icon")
         })
     }
 }
