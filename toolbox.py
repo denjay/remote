@@ -82,7 +82,12 @@ def validate_match_code(func):
     @wraps(func)
     def wrapper(*args, **kw):
         if request.method == "POST":
-            data = json.loads(request.data)
+            if request.data:
+                data = json.loads(request.data)
+            elif request.form:
+                data = request.form.to_dict()
+            else:
+                return jsonify({"message": "匹配码不正确"})
         elif request.method == "GET":
             data = request.args
         if data["match_code"] != config.match_code:

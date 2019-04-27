@@ -208,14 +208,17 @@ button {
 }
 
 textarea {
+  box-sizing: border-box;
   border-color: #00d1b2;
   background-color: transparent;
-  width: 80%;
+  width: 100%;
+  margin-top: 15px;
 }
 
 #transport,
 #set {
   display: none;
+  margin: 0px 15px;
 }
 
 .switch {
@@ -255,13 +258,20 @@ textarea {
   color: darkslategray;
 }
 
+#set {
+  display: flexbox;
+  align-items: speac-around;
+}
+
 #set div {
-  margin: 20px auto;
-  width: 90%;
   display: flex;
-  align-items: Center;
-  height: 40px;
-  border-bottom: 1px rgba(19, 206, 103, 0.452) solid;
+  align-items: center;
+  height: 20px;
+  margin: 20px 0px;
+}
+
+#set div:first-child, #set div:last-child {
+  margin: 0px 0px;
 }
 
 #button-shutdown {
@@ -303,12 +313,76 @@ textarea {
 }
 
 .button {
-  width: 135px;
+  width: 49%;
   font-size: 16px;
   line-height: 35px;
   border-radius: 4px;
-  margin: 5px;
   background-color: #0bc4ae;
   color: white;
   border: none;
+}
+
+#transport-text, #transport-file, #set {
+  background-color: rgba(255, 255, 255, 0.377);
+  padding: 15px 20px;
+  border-left: 3px #0bc424 solid;
+}
+
+#transport-file {
+  margin-top: 25px;
+}
+
+#transport-file div {
+  text-align: left;
+  color: gray;
+  font-size: 14px;
+  position: relative;
+  top: 5px;
+}
+
+#file-input {
+  position: absolute;
+  right: 0;
+  top: 0;
+  opacity: 0;
+}
+
+ol {
+  list-style: none;
+  padding-left: 0px;
+  text-align: left;
+  margin: 12px 0px 0px;
+}
+
+ol li {
+  height: 24px;
+  padding-left: 2px;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 24px;
+}
+ol li:nth-child(2n+1) {
+  background-color: rgba(128, 128, 128, 0.582);
+}
+
+ol li:nth-child(2n) {
+  background-color: rgba(200, 200, 200, 0.582);
+}
+
+progress{
+  display: none;
+  width: 100%;
+  height: 10px;
+  border-radius: 5px;
+ }
+
+progress::-webkit-progress-bar
+{
+  border-radius: 5px;
+  background-color:#d7d7d7;
+}
+progress::-webkit-progress-value
+{
+  border-radius: 5px;
+  background-color:rgb(84, 218, 39);;
 }

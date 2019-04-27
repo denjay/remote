@@ -1,4 +1,10 @@
 #!/bin/bash
+if test `whoami` = "root"
+then
+    echo "请用普通用户运行此文件"
+    exit
+fi
+
 echo -n "请输入你的系统名(arch/deepin):"
 read system 
 if test $system = "deepin"

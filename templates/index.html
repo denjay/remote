@@ -39,10 +39,26 @@
 
     <!-- 传输界面 -->
     <div id="transport">
-      <textarea rows="5" placeholder="输入要传送的文字"></textarea>
-      <br>
-      <button class="button" onclick="set_clipboard_content()">传文字到剪贴板</button>
-      <button class="button" onclick="send_code('get_clipboard_content')">获取剪贴板内容</button>
+      <div id="transport-text">
+        <button class="button" onclick="set_clipboard_content()">传文字到剪贴板</button>
+        <button class="button" onclick="send_code('get_clipboard_content')">获取剪贴板内容</button>
+        <textarea rows="5" placeholder="输入要传送的文字"></textarea>
+      </div>
+      <div id="transport-file">
+        <form id="form">
+          <input type="file" id="file-input" name="files" onchange="file_list_change(files)" multiple="multiple" />
+        </form>
+        <button class="button" onclick="select_file()">点击选择文件</button>
+        <button class="button" onclick="upload()">上传所选文件</button>
+        <div>未选择任何文件</div>
+        <progress id="progress-bar" value="0" max="1"> </progress>
+        <ol>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+        </ol>
+      </div>
     </div>
 
     <!-- 设置界面 -->
@@ -53,11 +69,15 @@
       </div>
       <div>
         <span class="switch"></span>
-        <span>仅显示执行失败的消息</span>
+        <span>仅显示失败的消息</span>
       </div>
       <div>
         <span class="switch"></span>
         <span>电脑执行命令后息屏</span>
+      </div>
+      <div>
+        <span class="switch"></span>
+        <span>文件上传至电脑桌面</span>
       </div>
     </div>
   </div>

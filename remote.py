@@ -195,10 +195,10 @@ class Remote(object):
         self.minimize_button_label = tk.Label(self.frame, image=self.img_minimize, width=20, height=20, fg=self.skins[config.skin][3], bg=self.skins[config.skin][0])
         self.minimize_button_label.grid(row=0, column=0)
         # 添加单击事件
-        self.close_button_label.bind('<ButtonPress-1>', self.quit)  
+        self.close_button_label.bind('<ButtonPress-1>', self.quit)
         self.close_button_label.bind('<Enter>', self.change_close_button_img)
         self.close_button_label.bind('<Leave>', self.change_close_button_img)
-        self.minimize_button_label.bind('<ButtonPress-1>', self.minimize)  
+        self.minimize_button_label.bind('<ButtonPress-1>', self.minimize)
         self.minimize_button_label.bind('<Enter>', self.change_minimize_button_img)
         self.minimize_button_label.bind('<Leave>', self.change_minimize_button_img)
         # 消息框

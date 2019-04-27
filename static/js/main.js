@@ -31,7 +31,7 @@ document.querySelectorAll("ul li").forEach((item, index) => {
 function toggle(index_outer) {
     document.querySelectorAll("#container > div").forEach((item, index_inner) => {
         if (index_inner === index_outer) {
-            item.style.display = "inline";
+            item.style.display = "block";
         } else {
             item.style.display = "none";
         }
@@ -81,7 +81,6 @@ document.querySelectorAll(".switch").forEach((item, index_outer) => {
                     var new_front_end_config = front_end_config + Math.pow(2, index_inner)
                 }
                 if (! new_front_end_config) {
-                    console.log(new_front_end_config)
                     new_front_end_config = 0
                 }
                 send_code("configuration", {
@@ -205,9 +204,9 @@ function handle_response(result) {
     } else if (result.text) {
         var textarea_el = document.getElementsByTagName("textarea")[0]
         textarea_el.value = result.text
-    } else if (result.message != undefined) {
+    } else if (result.message !== undefined) {
         show_message(result.message)
-    } else if (result.front_end_config != undefined) {
+    } else if (result.front_end_config !== undefined) {
         front_end_config = result.front_end_config
         refresh_switch()
         rotate()
@@ -263,4 +262,64 @@ function send_code(path, params) {
             }
         }, 3000)
     })
+}
+
+// 文件上传相关
+var file_list = []
+function select_file() {
+    document.querySelector('#file-input').click()
+}
+
+function file_list_change(files) {
+    file_list = files
+    let progress_obj = document.querySelector("#progress-bar")
+    progress_obj.style.display = "none"
+    progress_obj.value = "0"
+
+    let ol_obj = document.querySelector("#transport-file ol")
+    if(file_list.length === 0) {
+        document.querySelector("#transport-file div").innerHTML = "未选择任何文件"
+        while (ol_obj.firstChild) {
+            ol_obj.removeChild(ol_obj.firstChild);
+        }
+        ol_obj.insertAdjacentHTML('beforeend', `<li></li><li></li><li></li><li></li>`)
+    } else {
+        while (ol_obj.firstChild) {
+            ol_obj.removeChild(ol_obj.firstChild);
+        }
+        for(let item of file_list) {
+            ol_obj.insertAdjacentHTML('beforeend', `<li>${item.name}</li>`)
+        }
+        if(file_list.length < 4) {
+            for(let l = file_list.length; l < 4; l++) {
+                ol_obj.insertAdjacentHTML('beforeend', `<li></li>`)
+            }
+        }
+        document.querySelector("#transport-file div").innerHTML = `已选择${file_list.length}个文件`
+    }
+}
+
+function upload() {
+    if(file_list.length === 0) {
+        show_message("请先选择文件！")
+    } else {
+        document.querySelector("#transport-file div").innerHTML = '正在上传文件...'
+        let progress_obj = document.querySelector("#progress-bar")
+        progress_obj.style.display = "initial"
+        var ajax = new XMLHttpRequest()
+        let ip = window.localStorage.getItem("ip")
+        ajax.open("post", `http://${ip}:8765/upload`, true)
+
+        ajax.upload.addEventListener("progress", (progress_event) => {
+            progress_obj.value = progress_event.loaded / progress_event.total
+        });
+
+        ajax.onload = function () {
+            document.querySelector("#transport-file div").innerHTML = '上传完成'
+            show_message("文件上传完成!")
+        }
+        let form = new FormData(document.querySelector("#form"))
+        form.append("match_code", match_code)
+        ajax.send(form)
+    }
 }

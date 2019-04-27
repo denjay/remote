@@ -112,6 +112,24 @@ def run_flask(label, root):
         else:
             return jsonify({"front_end_config": config.front_end_config})
 
+    @app.route("/upload", methods=["post"])
+    @validate_match_code
+    def upload():
+        '''上传文件'''
+        if config.front_end_config & 0b1000 == 0b1000:
+            UPLOAD_FOLDER = os.path.join(os.environ['HOME'], 'Desktop')
+        else:
+            UPLOAD_FOLDER = os.path.join(os.environ['HOME'], 'Downloads')
+        for file in request.files.getlist('files'):
+            filename = file.filename
+            if os.path.exists(os.path.join(UPLOAD_FOLDER, filename)):
+                new_name = f'{os.path.splitext(filename)[0]}_{str(int(time.time()))}{os.path.splitext(filename)[1]}'
+                file.save(os.path.join(UPLOAD_FOLDER, new_name))
+            else:
+                file.save(os.path.join(UPLOAD_FOLDER, filename))
+        label.config(text="收到文件")
+        return jsonify({"message": "所有文件上传成功"})
+
     label.config(text='成功启动服务')
     try:
         app.run(port=8765, host="0.0.0.0")
