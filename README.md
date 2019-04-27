@@ -30,10 +30,9 @@ linux平台轻量级的局域网电脑控制软件，通过扫码，在手机浏
 * setproctitle
 
 **软件安装**
-
-1. git clone https://github.com/denjay/remote.git
-2. cd remote
-3. . install.sh
+1. `git clone https://github.com/denjay/remote.git`
+2. `cd remote`
+3. `./install.sh`
 
 **截图**
 
